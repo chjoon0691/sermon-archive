@@ -1,33 +1,111 @@
-/**
- * 수정된 AI 분석 함수
- * 1단계: 검색 도구를 사용해 유튜브 영상 정보를 텍스트로 가져옴
- * 2단계: 가져온 텍스트를 AI에게 전달하여 구조화
- */
-async function analyzeSermon(youtubeUrl) {
-    const apiKey = localStorage.getItem("gemini_api_key"); 
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 스마트 설교 아카이브</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
 
-    // 1단계: 정보 수집 (JSON 응답 설정 제거 - 오류 방지)
-    const response1 = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: `다음 유튜브 설교 영상을 분석하여 제목, 본문, 요약, 핵심 대지, 예화를 추출해줘: ${youtubeUrl}` }] }],
-            tools: [{ google_search: {} }]
-        })
-    });
+    <!-- 헤더 영역 -->
+    <header class="max-w-5xl mx-auto mb-8 flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div>
+            <h1 class="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+                <span>📖</span> AI 스마트 설교 아카이브
+            </h1>
+            <p class="text-gray-500 text-sm mt-1">AI 기반 설교 분석 및 주제별 예화 자산 관리 시스템</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="setApiKey()" class="text-sm bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg font-medium">Gemini API 키 설정</button>
+        </div>
+    </header>
 
-    const data1 = await response1.json();
-    const extractedText = data1.candidates[0].content.parts[0].text;
+    <main class="max-w-5xl mx-auto space-y-6">
+        <!-- 분석 입력창 -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="font-bold mb-4 flex items-center gap-2">✨ 새로운 설교 등록 및 AI 자동 분석</h2>
+            <div class="flex gap-2">
+                <input id="youtubeUrl" type="text" placeholder="유튜브 설교 영상 주소를 입력하세요." class="flex-1 border rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <button onclick="startAnalysis()" id="analyzeBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-bold transition">AI 설교 분석 시작</button>
+            </div>
+        </section>
 
-    // 2단계: 수집된 텍스트를 구조화 (중요: responseMimeType 설정 제외)
-    const response2 = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: `이 텍스트를 기반으로 JSON 형식의 데이터로 변환해줘. 필드: title, scripture, summary, points(배열), illustrations(배열). 텍스트: ${extractedText}` }] }]
-        })
-    });
+        <!-- 결과 표시 영역 -->
+        <section id="resultArea" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div id="loading" class="text-center py-10 text-gray-400">분석 중입니다... 잠시만 기다려 주세요.</div>
+            <div id="content" class="hidden space-y-4">
+                <h3 id="resTitle" class="text-xl font-bold"></h3>
+                <p id="resScripture" class="text-indigo-600 font-medium"></p>
+                <div id="resSummary" class="text-gray-700 leading-relaxed"></div>
+            </div>
+        </section>
+    </main>
 
-    return await response2.json();
-}
+    <script>
+        // API 키 설정 함수
+        function setApiKey() {
+            const key = prompt("Gemini API Key를 입력하세요:");
+            if (key) localStorage.setItem("gemini_api_key", key);
+        }
+
+        // AI 분석 함수
+        async function startAnalysis() {
+            const youtubeUrl = document.getElementById('youtubeUrl').value;
+            const apiKey = localStorage.getItem("gemini_api_key");
+            
+            if (!apiKey) return alert("API 키를 먼저 설정해주세요.");
+            if (!youtubeUrl) return alert("유튜브 주소를 입력하세요.");
+
+            const resultArea = document.getElementById('resultArea');
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('content');
+            
+            resultArea.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+            try {
+                // 1단계: 정보 검색 및 요약
+                const response1 = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `다음 유튜브 설교를 분석하여 제목, 본문, 요약, 핵심 대지, 예화를 추출해줘: ${youtubeUrl}` }] }],
+                        tools: [{ google_search: {} }]
+                    })
+                });
+                const data1 = await response1.json();
+                const extractedText = data1.candidates[0].content.parts[0].text;
+
+                // 2단계: JSON 구조화
+                const response2 = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `이 텍스트를 분석해서 아래 JSON 형식으로만 응답해줘.\n\nJSON 형식: { "title": "제목", "scripture": "본문", "summary": "요약", "points": ["대지1"], "illustrations": ["예화1"] }\n\n분석할 텍스트: ${extractedText}` }] }]
+                    })
+                });
+                const data2 = await response2.json();
+                let rawResponse = data2.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const jsonResult = JSON.parse(rawResponse);
+
+                // 결과 표시
+                document.getElementById('resTitle').innerText = jsonResult.title;
+                document.getElementById('resScripture').innerText = jsonResult.scripture;
+                document.getElementById('resSummary').innerText = jsonResult.summary;
+                
+                loading.classList.add('hidden');
+                content.classList.remove('hidden');
+
+            } catch (error) {
+                console.error(error);
+                alert("분석 중 오류가 발생했습니다. API 키를 확인하거나 다시 시도해주세요.");
+                loading.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

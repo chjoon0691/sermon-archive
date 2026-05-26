@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 스마트 설교 아카이브 & 분석 시스템</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Pretendard', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+    <div id="app" class="flex flex-col min-h-screen">
+        <!-- 상단 헤더 -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-indigo-600 rounded-lg text-white">
+                        <i data-lucide="book-open" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-slate-900 leading-tight">스마트 설교 아카이브</h1>
+                        <p class="text-xs text-slate-500">AI 기반 설교 분석 및 주제별 자산 관리 시스템</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-500"></span>기기 로컬 작동중
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 메인 레이아웃 (좌측 사이드바 + 우측 본문) -->
+        <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
+            
+            <!-- 좌측 사이드바: 대시보드 요약 및 주제 카테고리 -->
+            <aside class="w-full lg:w-64 flex-shrink-0 space-y-6">
+                <!-- 1. 통계 요약 카드 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <h2 class="text-sm font-semibold text-slate-500 mb-3 flex items-center">
+                        <i data-lucide="pie-chart" class="w-4 h-4 mr-1.5 text-slate-400"></i> 아카이브 현황
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-3 rounded-lg text-center">
+                            <span class="text-2xl font-bold text-slate-900" id="totalSermonsCount">3</span>
+                            <p class="text-xs text-slate-500 mt-1">등록된 설교</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-lg text-center">
+                            <span class="text-2xl font-bold text-slate-900" id="totalIllustrationsCount">4</span>
+                            <p class="text-xs text-slate-500 mt-1">추출된 예화</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 주제별 필터 (가장 중요한 요구사항!) -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-semibold text-slate-700 flex items-center">
+                            <i data-lucide="hash" class="w-4 h-4 mr-1.5 text-indigo-500"></i> 주제별 탐색
+                        </h2>
+                        <button onclick="clearFilter()" class="text-xs text-slate-400 hover:text-slate-600 underline">전체보기</button>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-3">태그를 누르면 해당 주제의 설교와 예화가 필터링됩니다.</p>
+                    <div class="flex flex-wrap gap-2" id="topicList">
+                        <!-- JS로 동적 렌더링 예정 -->
+                    </div>
+                </div>
+
+                <!-- 3. 도움말 안내 -->
+                <div class="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100">
+                    <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-1 flex items-center">
+                        <i data-lucide="help-circle" class="w-4 h-4 mr-1 text-indigo-600"></i> 실전 가이드
+                    </h3>
+                    <p class="text-xs text-indigo-700 leading-relaxed">
+                        실제 구축 시 유튜브 주소를 입력하면 백엔드 서버에서 AI가 설교를 분석하여 아래 목록에 실시간으로 데이터베이스화하여 적재하게 됩니다.
+                    </p>
+                </div>
+            </aside>
+
+            <!-- 우측 메인 영역 -->
+            <main class="flex-1 space-y-8 min-w-0">
+                
+                <!-- 상단 유튜브 입력 섹션 -->
+                <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 class="text-lg font-bold text-slate-900 mb-2 flex items-center">
+                        <i data-lucide="youtube" class="w-6 h-6 mr-2 text-red-500"></i> 새로운 설교 등록 및 AI 자동 분석
+                    </h2>
+                    <p class="text-sm text-slate-500 mb-4">분석할 유튜브 설교 영상의 주소를 입력하세요. AI가 실시간으로 분석하여 DB에 등록합니다.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="link" class="h-5 w-5 text-slate-400"></i>
+                            </div>
+                            <input type="text" id="youtubeUrl" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="https://www.youtube.com/watch?v=...">
+                        </div>
+                        <button onclick="analyzeSermon()" id="analyzeBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shrink-0 shadow-sm shadow-indigo-100">
+                            <i data-lucide="wand-2" class="w-5 h-5"></i>
+                            <span>AI 설교 분석 시작</span>
+                        </button>
+                    </div>
+
+                    <!-- 분석 진행률 표시 (숨김 상태) -->
+                    <div id="loadingArea" class="hidden mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-slate-600 flex items-center" id="statusMessage">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                유튜브 자막(대본)을 다운로드하는 중...
+                            </span>
+                            <span class="text-xs font-bold text-indigo-600" id="loadingPercent">25%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div id="loadingBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 분석 결과 및 탭 메뉴 -->
+                <section>
+                    <div class="border-b border-slate-200 mb-6">
+                        <nav class="flex space-x-8" aria-label="Tabs">
+                            <button onclick="switchTab('sermons')" id="tabBtnSermons" class="border-indigo-600 text-indigo-600 pb-4 px-1 border-b-2 font-semibold text-sm flex items-center space-x-2">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                <span>설교 아카이브 라이브러리</span>
+                            </button>
+                            <button onclick="switchTab('illustrations')" id="tabBtnIllustrations" class="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 pb-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                <span>예화 보물창고 (독립 보기)</span>
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- 탭 1: 설교문 목록 카드 -->
+                    <div id="tabContentSermons" class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-slate-900 text-lg flex items-center">
+                                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-md mr-2" id="filteredTagLabel">전체</span>
+                                분석된 설교문 리스트
+                            </h3>
+                            <p class="text-xs text-slate-500" id="listSummaryText">총 3개의 설교문이 저장되어 있습니다.</p>
+                        </div>
+
+                        <!-- 설교 그리드/리스트 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="sermonContainer">
+                            <!-- JS를 통해 템플릿 카드가 동적 생성됨 -->
+                        </div>
+                    </div>
+
+                    <!-- 탭 2: 예화 모아보기 -->
+                    <div id="tabContentIllustrations" class="hidden space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-slate-900 text-lg flex items-center">
+                                <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-md mr-2" id="illustrationTagLabel">전체</span>
+                                추출된 설교 예화 모음집
+                            </h3>
+                            <p class="text-xs text-slate-500">각 설교문에서 AI가 자동으로 추출해 낸 보석 같은 예화들입니다.</p>
+                        </div>
+
+                        <!-- 예화 카드 리스트 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="illustrationContainer">
+                            <!-- JS를 통해 동적 생성 -->
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- 모달 창: 설교문 디테일 뷰 -->
+        <div id="sermonModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+                <!-- 모달 헤더 -->
+                <div class="p-6 border-b border-slate-200 flex items-start justify-between bg-slate-50">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800" id="modalDate">2026-05-15</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-800" id="modalPreacher">홍길동 목사</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800" id="modalScripture">창세기 1:1</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900" id="modalTitle">설교 제목이 출력됩니다</h3>
+                    </div>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- 모달 바디 (스크롤 가능) -->
+                <div class="p-6 overflow-y-auto space-y-6 flex-1">
+                    
+                    <!-- 핵심 요약 -->
+                    <div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100">
+                        <h4 class="text-sm font-bold text-indigo-900 mb-2 flex items-center">
+                            <i data-lucide="quote" class="w-4 h-4 mr-1.5 text-indigo-600"></i> 설교 핵심 요약 및 주제
+                        </h4>
+                        <p class="text-sm text-slate-700 leading-relaxed" id="modalSummary">설교의 전체 핵심과 맥락 요약본입니다.</p>
+                        <div class="mt-3 flex flex-wrap gap-1.5" id="modalTags">
+                            <!-- 주제 태그 -->
+                        </div>
+                    </div>
+
+                    <!-- 설교 대지 구성 (Outline) -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-900 mb-3 flex items-center">
+                            <i data-lucide="list-ordered" class="w-4.5 h-4.5 mr-1.5 text-indigo-600"></i> 설교 대지 아웃라인
+                        </h4>
+                        <div class="space-y-3" id="modalOutline">
+                            <!-- 대지 1, 2, 3 들어오는 곳 -->
+                        </div>
+                    </div>
+
+                    <!-- 추출된 예화 섹션 -->
+                    <div class="border-t border-slate-100 pt-6">
+                        <h4 class="text-sm font-bold text-slate-900 mb-3 flex items-center">
+                            <i data-lucide="sparkles" class="w-4.5 h-4.5 mr-1.5 text-amber-500"></i> 이 설교에 등장한 핵심 예화 (Illustrations)
+                        </h4>
+                        <div class="space-y-4" id="modalIllustrations">
+                            <!-- 예화가 배치되는 곳 -->
+                        </div>
+                    </div>
+
+                    <!-- 전체 대본(텍스트) 보기 -->
+                    <div class="border-t border-slate-100 pt-6">
+                        <details class="group">
+                            <summary class="flex items-center justify-between font-bold text-sm text-slate-700 cursor-pointer hover:text-indigo-600 list-none">
+                                <span class="flex items-center">
+                                    <i data-lucide="file-text" class="w-4.5 h-4.5 mr-1.5"></i> 전체 추출 설교문 텍스트 전문 보기
+                                </span>
+                                <span class="transition group-open:rotate-180">
+                                    <i data-lucide="chevron-down" class="w-4.5 h-4.5"></i>
+                                </span>
+                            </summary>
+                            <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm text-slate-600 leading-relaxed max-h-96 overflow-y-auto whitespace-pre-line" id="modalFullTranscript">
+                                설교문 전체 원문 텍스트입니다...
+                            </div>
+                        </details>
+                    </div>
+
+                </div>
+
+                <!-- 모달 푸터 -->
+                <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-xl text-sm transition">
+                        닫기
+                    </button>
+                    <button onclick="copyFullSermonText()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-sm transition flex items-center space-x-1.5">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span>설교 전문 복사</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 푸터 -->
+        <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+            <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+                <p>© 2026 AI 스마트 설교 아카이브 시스템. Powered by Gemini Pro & YouTube Caption API.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 임시 데이터 및 프론트엔드 기능 제어 스크립트 -->
+    <script>
+        // 초기 임시 데이터셋 (데이터베이스 역할)
+        let sermons = [
+            {
+                id: 1,
+                title: "감사로 여는 축복의 문",
+                preacher: "김은혜 목사",
+                date: "2026-05-10",
+                scripture: "데살로니가전서 5:16-18",
+                summary: "본 설교는 모든 상황 속에서 원망 대신 감사를 선언할 때, 성도의 삶에 진정한 영적 축복과 평안이 찾아온다는 성경적 가르침을 전달합니다. 비록 고난이 가로막을지라도 감사는 하나님의 뜻이자 문제 해결의 열쇠임을 설명합니다.",
+                topics: ["감사", "믿음", "위로"],
+                outline: [
+                    "1대지: 항상 기뻐해야 하는 이유 (기쁨은 영적 방어막입니다)",
+                    "2대지: 쉬지 말고 기도할 때 감사가 나옵니다 (감사의 체질화)",
+                    "3대지: 범사에 감사하는 것이 그리스도 안에서 하나님의 온전한 뜻입니다 (믿음의 선포)"
+                ],
+                illustrations: [
+                    {
+                        title: "감옥 속에서 찬양을 찾은 리처드 범브란트 목사",
+                        content: "리처드 범브란트 목사는 무신론 정권 치하의 차가운 독방 감옥에서도 오히려 주님의 은혜를 깊이 묵상하며 밤마다 마음으로 찬송의 제사를 드렸습니다. 고난이라는 외부적 환경이 그의 감사를 꺾지 못했던 실화는 감사가 환경이 아닌 선택임을 강력히 일깨워줍니다.",
+                        topic: "감사"
+                    },
+                    {
+                        title: "매일 아침 '감사 일기'를 쓰는 심장학 의사 이야기",
+                        content: "의학 논문에 따르면, 고혈압을 앓던 환자들에게 3주 동안 매일 3가지 감사한 일을 적게 한 결과, 스트레스 호르몬 수치가 현저히 떨어지고 혈압이 안정되었다는 연구가 있습니다. 이는 하나님의 말씀이 우리 육체에도 고스란히 이로운 생명력이 됨을 증명합니다.",
+                        topic: "과학/치유"
+                    }
+                ],
+                youtubeUrl: "https://www.youtube.com/watch?v=sermon_sample_1",
+                fullTranscript: "[서론]\n사랑하는 성도 여러분, 오늘 우리에게 주신 주님의 말씀은 우리의 환경을 뒤바꿀 영적 원동력을 제시합니다. 바로 '범사에 감사하라'는 말씀입니다.\n\n[본론]\n때론 감당하기 힘든 위기가 다가옵니다. 하지만 고난의 터널 속에서도 감사를 외칠 때, 그 감사가 우리 영혼의 닻이 되어 흔들리지 않게 합니다. 리처드 범브란트 목사님의 일화를 들어보셨을 것입니다. 차가운 지하 감옥에서도 기도의 제사를 드리며...\n\n[결론]\n성도 여러분, 원망은 마음의 질병을 부르고, 감사는 은혜를 자라게 합니다. 매일 아침 단 세 가지 감사 제목을 적어가 보십시오. 기적이 여러분 삶의 예배에서 시작될 것입니다."
+            },
+            {
+                id: 2,
+                title: "고난 속에서 소망을 붙들라",
+                preacher: "박사랑 목사",
+                date: "2026-05-17",
+                scripture: "로마서 8:28",
+                summary: "우리가 살아가며 겪는 뜻하지 않은 슬픔과 고난 역시 하나님의 오묘하신 계획 안에서 합력하여 궁극적인 선을 이룬다는 것을 선포하며, 낙망하지 않고 하나님을 끝까지 신뢰할 것을 촉구하는 영적 격려의 메시지입니다.",
+                topics: ["고난", "소망", "믿음"],
+                outline: [
+                    "1대지: 우리가 알거니와 하나님을 사랑하는 자들에게는 실패가 없습니다",
+                    "2대지: 그의 뜻대로 부르심을 입은 자들은 시련을 기회로 바꿉니다",
+                    "3대지: 모든 것이 합력하여 마침내 선을 이루시는 하나님이십니다"
+                ],
+                illustrations: [
+                    {
+                        title: "진흙 속에 피어나는 백합화와 도자기 가마의 뜨거운 불",
+                        content: "최고의 도자기가 완성되기 위해서는 천 도가 넘는 가마 속 뜨거운 불을 견뎌야만 합니다. 뜨거운 불은 도자기를 깨뜨리는 것이 아니라, 단단하고 아름답게 굳혀 영롱한 빛을 내게 만듭니다. 우리 삶의 고난 역시 영적 가마터와 같아서 우리의 자아를 단단하고 귀한 그릇으로 완성시킵니다.",
+                        topic: "고난"
+                    }
+                ],
+                youtubeUrl: "https://www.youtube.com/watch?v=sermon_sample_2",
+                fullTranscript: "[서론]\n인생의 겨울철을 지나고 계신 성도님이 계십니까? 왜 나에게 이런 일이 일어나는지 이해하지 못해 눈물 흘리는 분들이 계실 것입니다.\n\n[본론]\n사도 바울은 로마서에서 분명히 약속하십니다. '모든 것이 합력하여 선을 이루느니라.' 불 속에 들어간 도자기를 구경해 본 적 있으십니까? 만일 도자기가 감정이 있다면 가마 안에서 원망을 늘어놓을지도 모릅니다. 그러나 장인은 불의 세기를 정밀하게 조절하여 가장 완벽한 걸작을 만들어 냅니다...\n\n[결론]\n포기하지 마십시오. 하나님께서는 지금 당신의 눈물을 보석으로 빚고 계십니다. 주님의 깊으신 뜻을 굳게 신뢰하시길 축원합니다."
+            },
+            {
+                id: 3,
+                title: "약한 나를 강하게 만드시는 믿음",
+                preacher: "이믿음 목사",
+                date: "2026-04-20",
+                scripture: "고린도후서 12:9-10",
+                summary: "인간의 연약함과 한계는 부끄러움이 아니라, 도리어 그리스도의 완전한 능력이 우리 삶 속에 온전히 임하여 강하게 역사하게 만드는 역설적인 통로가 됨을 바울의 육체의 가시 고백을 통해 입증합니다.",
+                topics: ["믿음", "위로", "가정"],
+                outline: [
+                    "1대지: 은혜가 네게 족하도다 (이미 주신 분량의 중요성)",
+                    "2대지: 나의 여러 약한 것들에 대하여 도리어 크게 기뻐하는 태도",
+                    "3대지: 이는 그리스도의 능력이 내 삶에 영원히 머무르게 하려 함이라"
+                ],
+                illustrations: [
+                    {
+                        title: "세계 최고의 현악기 '스트라디바리우스'의 금간 나무",
+                        content: "역사상 가장 아름다운 소리를 낸다는 스트라디바리우스 명기들 중 일부는 상처 나고 금간 오래된 고목을 사용하여 제작되었습니다. 메말라 뒤틀린 나무 상처 속에 장인의 영혼이 깃들자, 어떤 매끄러운 새 나무보다 깊고 풍성한 천상의 소리를 내게 되었습니다. 주님은 상처 입은 우리 삶을 최고의 악기로 빚어 찬송을 내십니다.",
+                        topic: "위로"
+                    }
+                ],
+                youtubeUrl: "https://www.youtube.com/watch?v=sermon_sample_3",
+                fullTranscript: "[서론]\n세상은 강함을 숭배하고 완벽함을 자랑합니다. 그러나 십자가의 복음은 완전히 다른 관점을 가르쳐 줍니다.\n\n[본론]\n하나님은 우리의 약함을 아십니다. 오히려 우리가 내 지식과 경험을 내려놓고 가장 연약해질 때, 하나님의 강한 손이 우리를 들어 쓰십니다. 스트라디바리우스의 명기 비밀을 알고 계십니까? 결이 깨진 고목의 틈에서 가장 공명이 큰 소리가 울려 나옵니다. 여러분 영혼의 아물지 않은 흔적이 바로 하나님의 은혜가 춤출 무대입니다...\n\n[결론]\n약할 때 진정한 주님의 강함이 폭발합니다. 스스로 연약하다고 낙담치 말고, 나의 모든 연약함을 채우실 온전하신 하나님 아버지만을 굳세게 신뢰하십시오."
+            }
+        ];
+
+        // 상태 변수
+        let currentTab = 'sermons'; // 'sermons' | 'illustrations'
+        let selectedTopicFilter = null;
+
+        // 초기화 실행
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTopicList();
+            renderSermonList();
+            renderIllustrationList();
+            updateStats();
+            lucide.createIcons();
+        });
+
+        // 1. 통계 수치 실시간 업데이트
+        function updateStats() {
+            document.getElementById('totalSermonsCount').innerText = sermons.length;
+            
+            // 모든 설교에 들어있는 예화 개수 계산
+            let illCount = sermons.reduce((acc, curr) => acc + curr.illustrations.length, 0);
+            document.getElementById('totalIllustrationsCount').innerText = illCount;
+            
+            document.getElementById('listSummaryText').innerText = `총 ${sermons.length}개의 설교문이 저장되어 있습니다.`;
+        }
+
+        // 2. 전체 고유 주제 리스트 추출 및 렌더링
+        function getUniqueTopics() {
+            let topicsSet = new Set();
+            sermons.forEach(sermon => {
+                sermon.topics.forEach(t => topicsSet.add(t));
+                sermon.illustrations.forEach(ill => {
+                    if (ill.topic) topicsSet.add(ill.topic);
+                });
+            });
+            return Array.from(topicsSet);
+        }
+
+        function renderTopicList() {
+            const topicListDiv = document.getElementById('topicList');
+            topicListDiv.innerHTML = '';
+            
+            const uniqueTopics = getUniqueTopics();
+            
+            uniqueTopics.forEach(topic => {
+                const isSelected = selectedTopicFilter === topic;
+                const badge = document.createElement('button');
+                badge.className = `px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center ${
+                    isSelected 
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100 ring-2 ring-indigo-500' 
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`;
+                badge.innerHTML = `<span class="mr-1">#</span>${topic}`;
+                badge.onclick = () => selectTopic(topic);
+                topicListDiv.appendChild(badge);
+            });
+        }
+
+        // 주제 필터링 선택 기능
+        function selectTopic(topic) {
+            if (selectedTopicFilter === topic) {
+                selectedTopicFilter = null; // 이미 누른 거 또 누르면 해제
+            } else {
+                selectedTopicFilter = topic;
+            }
+            
+            renderTopicList();
+            renderSermonList();
+            renderIllustrationList();
+            
+            // 태그 라벨 업데이트
+            document.getElementById('filteredTagLabel').innerText = selectedTopicFilter || '전체';
+            document.getElementById('illustrationTagLabel').innerText = selectedTopicFilter || '전체';
+        }
+
+        function clearFilter() {
+            selectedTopicFilter = null;
+            renderTopicList();
+            renderSermonList();
+            renderIllustrationList();
+            document.getElementById('filteredTagLabel').innerText = '전체';
+            document.getElementById('illustrationTagLabel').innerText = '전체';
+        }
+
+        // 3. 설교 라이브러리 목록 카드 렌더링
+        function renderSermonList() {
+            const container = document.getElementById('sermonContainer');
+            container.innerHTML = '';
+
+            // 필터링 적용
+            const filteredSermons = selectedTopicFilter 
+                ? sermons.filter(s => s.topics.includes(selectedTopicFilter) || s.illustrations.some(i => i.topic === selectedTopicFilter))
+                : sermons;
+
+            if (filteredSermons.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center bg-white border border-slate-200 rounded-2xl">
+                        <i data-lucide="folder-open" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
+                        <p class="text-slate-500 text-sm">해당 주제에 필터링된 설교문이 아직 없습니다.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            filteredSermons.forEach(s => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between";
+                
+                // 주제별 배지 만들기
+                let topicBadges = s.topics.map(t => 
+                    `<span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs font-semibold mr-1">#${t}</span>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs text-slate-400 flex items-center">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1"></i>${s.date}
+                            </span>
+                            <span class="text-xs text-indigo-600 font-semibold bg-indigo-50/50 px-2 py-1 rounded">
+                                ${s.preacher}
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-lg mb-2 hover:text-indigo-600 cursor-pointer line-clamp-1" onclick="openSermonModal(${s.id})">
+                            ${s.title}
+                        </h4>
+                        <p class="text-xs text-slate-500 font-medium mb-3 flex items-center">
+                            <i data-lucide="book-open-text" class="w-3.5 h-3.5 mr-1 text-slate-400"></i> ${s.scripture}
+                        </p>
+                        <p class="text-sm text-slate-600 line-clamp-3 mb-4 leading-relaxed bg-slate-50 p-3 rounded-lg">
+                            ${s.summary}
+                        </p>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            ${topicBadges}
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 flex items-center justify-between">
+                            <span class="text-xs text-amber-600 font-medium flex items-center">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1"></i>예화 ${s.illustrations.length}개 발견
+                            </span>
+                            <button onclick="openSermonModal(${s.id})" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center space-x-0.5">
+                                <span>상세 내용 및 예화 보기</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // 4. 예화 보물창고 목록 카드 렌더링
+        function renderIllustrationList() {
+            const container = document.getElementById('illustrationContainer');
+            container.innerHTML = '';
+
+            // 모든 설교에서 예화만 1차원 배열로 플래트닝하고 부모 설교 정보 연결
+            let allIllustrations = [];
+            sermons.forEach(s => {
+                s.illustrations.forEach(ill => {
+                    allIllustrations.push({
+                        ...ill,
+                        parentSermonId: s.id,
+                        parentSermonTitle: s.title,
+                        parentPreacher: s.preacher
+                    });
+                });
+            });
+
+            // 필터링 적용
+            const filteredIlls = selectedTopicFilter
+                ? allIllustrations.filter(i => i.topic === selectedTopicFilter)
+                : allIllustrations;
+
+            if (filteredIlls.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center bg-white border border-slate-200 rounded-2xl">
+                        <i data-lucide="folder-open" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
+                        <p class="text-slate-500 text-sm">해당 주제를 다룬 예화가 아직 없습니다.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            filteredIlls.forEach(ill => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl border border-amber-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between relative overflow-hidden";
+                
+                // 예쁜 데코레이터
+                card.innerHTML = `
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-amber-500/10 to-transparent pointer-events-none rounded-tr-2xl"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                                # ${ill.topic}
+                            </span>
+                            <span class="text-xs text-slate-400 cursor-pointer hover:underline font-medium" onclick="openSermonModal(${ill.parentSermonId})">
+                                출처: ${ill.parentSermonTitle}
+                            </span>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-base mb-3 flex items-center">
+                            <i data-lucide="quote" class="w-4 h-4 mr-1.5 text-amber-500"></i> ${ill.title}
+                        </h4>
+                        <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
+                            ${ill.content}
+                        </p>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button onclick="copyText('${ill.content.replace(/'/g, "\\'")}')" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center space-x-1 transition">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span>예화 텍스트 복사</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // 5. 모달 제어 (설교 상세 페이지)
+        let activeSermonIdForCopy = null;
+
+        function openSermonModal(sermonId) {
+            const s = sermons.find(item => item.id === sermonId);
+            if (!s) return;
+
+            activeSermonIdForCopy = s.id;
+
+            // 내용 채워넣기
+            document.getElementById('modalTitle').innerText = s.title;
+            document.getElementById('modalDate').innerText = s.date;
+            document.getElementById('modalPreacher').innerText = s.preacher;
+            document.getElementById('modalScripture').innerText = s.scripture;
+            document.getElementById('modalSummary').innerText = s.summary;
+            document.getElementById('modalFullTranscript').innerText = s.fullTranscript;
+
+            // 태그 리스트
+            const tagsDiv = document.getElementById('modalTags');
+            tagsDiv.innerHTML = s.topics.map(t => 
+                `<span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-semibold border border-indigo-100"># ${t}</span>`
+            ).join('');
+
+            // 대지 아웃라인
+            const outlineDiv = document.getElementById('modalOutline');
+            outlineDiv.innerHTML = s.outline.map(line => `
+                <div class="flex items-start p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <span class="flex-shrink-0 w-2 h-2 rounded-full bg-indigo-600 mt-2 mr-3"></span>
+                    <p class="text-sm text-slate-800 font-semibold leading-relaxed">${line}</p>
+                </div>
+            `).join('');
+
+            // 모달 안의 예화
+            const illDiv = document.getElementById('modalIllustrations');
+            if (s.illustrations.length === 0) {
+                illDiv.innerHTML = `<p class="text-xs text-slate-400">발견된 예화가 존재하지 않습니다.</p>`;
+            } else {
+                illDiv.innerHTML = s.illustrations.map(ill => `
+                    <div class="p-4 bg-amber-50/50 rounded-xl border border-amber-100 space-y-2 relative">
+                        <span class="absolute top-3 right-3 px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-bold"># ${ill.topic}</span>
+                        <h5 class="font-bold text-slate-900 text-sm flex items-center">
+                            <i data-lucide="quote" class="w-3.5 h-3.5 mr-1 text-amber-500"></i> ${ill.title}
+                        </h5>
+                        <p class="text-xs text-slate-600 leading-relaxed">${ill.content}</p>
+                    </div>
+                `).join('');
+            }
+
+            // 스크롤 맨 위로 보내고 표시
+            document.getElementById('sermonModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('sermonModal').classList.add('hidden');
+        }
+
+        // 전체 설교문 전문 복사
+        function copyFullSermonText() {
+            if (!activeSermonIdForCopy) return;
+            const s = sermons.find(item => item.id === activeSermonIdForCopy);
+            if (s) {
+                copyText(s.fullTranscript);
+            }
+        }
+
+        // 공통 복사 도우미
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('클립보드에 복사되었습니다!');
+            }).catch(err => {
+                console.error('복사 중 에러 발생:', err);
+            });
+        }
+
+        // 6. 탭 전환 기능
+        function switchTab(tabId) {
+            currentTab = tabId;
+            const tabBtnSermons = document.getElementById('tabBtnSermons');
+            const tabBtnIllustrations = document.getElementById('tabBtnIllustrations');
+            const tabContentSermons = document.getElementById('tabContentSermons');
+            const tabContentIllustrations = document.getElementById('tabContentIllustrations');
+
+            if (tabId === 'sermons') {
+                tabBtnSermons.className = "border-indigo-600 text-indigo-600 pb-4 px-1 border-b-2 font-semibold text-sm flex items-center space-x-2";
+                tabBtnIllustrations.className = "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 pb-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2";
+                tabContentSermons.classList.remove('hidden');
+                tabContentIllustrations.classList.add('hidden');
+            } else {
+                tabBtnSermons.className = "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 pb-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2";
+                tabBtnIllustrations.className = "border-indigo-600 text-indigo-600 pb-4 px-1 border-b-2 font-semibold text-sm flex items-center space-x-2";
+                tabContentSermons.classList.add('hidden');
+                tabContentIllustrations.classList.remove('hidden');
+            }
+        }
+
+        // 7. 새로운 유튜브 분석 시뮬레이션 (새 데이터 실시간 추가 및 적재)
+        function analyzeSermon() {
+            const urlInput = document.getElementById('youtubeUrl');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                alert('분석할 유튜브 동영상 주소를 입력해 주세요!');
+                return;
+            }
+
+            // 실제 유튜브 유효성 체크
+            if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+                alert('올바른 유튜브 주소 형식이 아닙니다.');
+                return;
+            }
+
+            const loadingArea = document.getElementById('loadingArea');
+            const loadingBar = document.getElementById('loadingBar');
+            const statusMessage = document.getElementById('statusMessage');
+            const loadingPercent = document.getElementById('loadingPercent');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+
+            // 버튼 비활성화 및 로딩 보이기
+            analyzeBtn.disabled = true;
+            loadingArea.classList.remove('hidden');
+
+            // 1단계: 자막 다운로드 시뮬레이션
+            setProgress(25, '유튜브 서버에서 자막(오디오 트랙) 데이터를 변환 및 파싱하는 중입니다...');
+
+            setTimeout(() => {
+                // 2단계: AI 분석 개시
+                setProgress(60, '구글 Gemini Pro AI가 설교문 원문에서 핵심 아웃라인과 본문을 식별 중입니다...');
+                
+                setTimeout(() => {
+                    // 3단계: 예화 및 핵심 요약 추출
+                    setProgress(90, '설교 내에 숨겨진 이야기적 요소를 감지하고, "주제별 태그"를 분류하는 중입니다...');
+                    
+                    setTimeout(() => {
+                        // 완료 후 임시 데이터에 새 설교 추가
+                        const newId = sermons.length + 1;
+                        const randomDate = new Date().toISOString().split('T')[0];
+                        
+                        // 새로운 가상 설교 데이터 생성 및 삽입
+                        const newSermon = {
+                            id: newId,
+                            title: `유튜브 분석 성공: 십자가의 참된 사랑과 지체들의 삶`,
+                            preacher: "김에이아이 목사",
+                            date: randomDate,
+                            scripture: "요한일서 4:11-12",
+                            summary: "이 분석 영상은 세상 속에서 그리스도의 무조건적인 사랑을 받은 우리가 어떻게 형제와 자매, 고통받는 지체들을 뜨겁게 섬겨야 할 것인지를 다룹니다.",
+                            topics: ["사랑", "가정", "위로"],
+                            outline: [
+                                "1대지: 하나님이 우리를 이처럼 사랑하셨은즉 마땅한 섬김이 우러납니다",
+                                "2대지: 어느 때나 하나님을 본 사람이 없으되 우리가 서로 연합하면 드러납니다",
+                                "3대지: 그의 사랑이 우리 안에서 온전히 영그는 기쁨의 가정과 공동체"
+                            ],
+                            illustrations: [
+                                {
+                                    title: "중환자실에서 다른 환자를 위해 기도하던 말기암 환자의 사랑",
+                                    content: "말기암 선고를 받고 본인조차 육체의 혹독한 고통을 겪고 있던 한 성도님이, 밤마다 신음 소리가 나는 옆 침대의 모르는 환자를 위해 간호사 몰래 다가가 손을 꼭 쥐어 주며 조용한 위로의 눈물 기도를 보내주었다는 성도 심방 일화가 있습니다. 본인의 절벽 속에서도 하나님의 사랑은 타인을 비추는 기적적인 불꽃으로 일어납니다.",
+                                    topic: "사랑"
+                                }
+                            ],
+                            youtubeUrl: url,
+                            fullTranscript: "[서론]\n성도 여러분 안녕하십니까. 오늘 유튜브 영상에서 수집한 본문을 전해드립니다. 바로 참된 주님의 사랑의 원천에 관한 말씀입니다.\n\n[본론]\n예수께서 십자가를 향해 걸어가셨을 때, 아무 조건을 걸지 않으셨습니다. 우리는 그 사랑을 빚진 자들입니다. 세상은 이기적인 이득을 위해 서로를 원망하지만 성도는 다른 차원의 길을 갑니다. 중환자실에 계셨던 모 교회 성도님의 가슴 절절한 이야기를 알고 계십니까? 고통의 극한 상황에서도 사랑은 오히려 다른 이를 감싸 안는 주님의 완전한 온기가 되어 드러납니다...\n\n[결론]\n내 손에 쥔 사랑이 연약할지라도 주님의 흘러넘치는 은혜의 줄기 속에 손을 담그십시오. 오늘부터 우리 교우들, 가장 사랑하기 어려운 내 주변 이웃 한 명에게 주님의 작은 손가락을 내밀 수 있기를 소망합니다."
+                        };
+
+                        sermons.unshift(newSermon); // 리스트의 맨 위에 삽입
+                        
+                        // 리렌더링 및 정리
+                        updateStats();
+                        renderTopicList();
+                        renderSermonList();
+                        renderIllustrationList();
+                        
+                        // 로딩 완료 후 상태 정리
+                        urlInput.value = '';
+                        loadingArea.classList.add('hidden');
+                        analyzeBtn.disabled = false;
+                        
+                        alert('성공! 유튜브 설교 속에서 대지 3개, 핵심 예화 1개, 주제 태그 3개가 자동 추출되어 라이브러리에 저장되었습니다.');
+                        
+                    }, 1200);
+                }, 1200);
+            }, 1000);
+        }
+
+        // 진행률 표시 도우미
+        function setProgress(percent, msg) {
+            const loadingBar = document.getElementById('loadingBar');
+            const statusMessage = document.getElementById('statusMessage');
+            const loadingPercent = document.getElementById('loadingPercent');
+
+            loadingBar.style.width = percent + '%';
+            loadingPercent.innerText = percent + '%';
+            statusMessage.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                ${msg}
+            `;
+        }
+    </script>
+</body>
+</html>

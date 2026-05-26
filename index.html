@@ -40,16 +40,17 @@
             </div>
             
             <div class="flex items-center space-x-2 self-start md:self-auto">
-                <!-- API 키 설정 버튼 -->
-                <button onclick="openApiModal()" class="flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold transition-all">
-                    <i data-lucide="key" class="w-3.5 h-3.5 text-slate-500"></i>
-                    <span>Gemini API 키 설정</span>
-                    <span id="api-status-badge" class="w-2 h-2 rounded-full bg-red-400"></span>
+                <!-- API 키 설정 버튼 (상태 표시 연동) -->
+                <button onclick="openApiModal()" id="api-btn-container" class="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold transition-all shadow-sm">
+                    <i data-lucide="key" class="w-4 h-4 text-slate-400"></i>
+                    <span>Gemini API 키</span>
+                    <span id="api-status-badge" class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+                    <span id="api-status-text" class="text-[10px] text-slate-400 ml-1 font-medium">설정 안 됨</span>
                 </button>
                 
-                <div class="flex items-center space-x-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-200 text-xs font-semibold">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>실시간 AI 검색 엔진 가동</span>
+                <div class="flex items-center space-x-2 bg-indigo-50 text-indigo-700 px-3 py-2 rounded-xl border border-indigo-100 text-xs font-bold">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <span>실시간 AI 검색 엔진 대기</span>
                 </div>
             </div>
         </header>
@@ -307,10 +308,19 @@
         function checkApiKey() {
             const key = getApiKey();
             const badge = document.getElementById('api-status-badge');
-            if (key) {
-                badge.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+            const statusText = document.getElementById('api-status-text');
+            const btnContainer = document.getElementById('api-btn-container');
+            
+            if (key && key.length > 5) {
+                badge.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                statusText.innerText = "연동 작동중";
+                statusText.className = "text-[10px] text-emerald-600 ml-1 font-bold";
+                btnContainer.className = "flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100/70 text-emerald-800 px-3 py-2 rounded-xl border border-emerald-200 text-xs font-bold transition-all shadow-sm";
             } else {
-                badge.className = "w-2 h-2 rounded-full bg-red-400";
+                badge.className = "w-2.5 h-2.5 rounded-full bg-red-400";
+                statusText.innerText = "키 등록 필요";
+                statusText.className = "text-[10px] text-red-500 ml-1 font-bold";
+                btnContainer.className = "flex items-center space-x-1.5 bg-red-50 hover:bg-red-100/70 text-red-800 px-3 py-2 rounded-xl border border-red-200 text-xs font-bold transition-all shadow-sm";
             }
         }
 
@@ -337,7 +347,7 @@
             localStorage.setItem('GEMINI_API_KEY', keyVal);
             closeApiModal();
             checkApiKey();
-            alertCustom("🔑 API 키가 성공적으로 로컬 환경에 저장되었습니다!");
+            alertCustom("🔑 API 키가 성공적으로 저장되었습니다. 이제 실시간 분석을 가동합니다!");
         }
 
         // --- 3. UI 렌더링 함수들 ---
@@ -627,28 +637,30 @@
             }
         }
 
-        // --- 4. Exponential Backoff 패턴 및 API 세부 응답 감지 기능 ---
+        // --- 4. Exponential Backoff 패턴 및 CORS 통신 대비 처리 ---
         async function fetchWithRetry(url, options, retries = 5, delay = 1000) {
             for (let i = 0; i < retries; i++) {
                 try {
-                    const response = await fetch(url, options);
+                    // 브라우저 직접 fetch 환경에서의 호환성 향상 옵션 추가
+                    const response = await fetch(url, {
+                        ...options,
+                        mode: 'cors',
+                        credentials: 'omit'
+                    });
+                    
                     const responseData = await response.json();
                     
-                    // 만약 정상 응답(200 OK)이라면 결과 JSON 반환
                     if (response.ok) {
                         return responseData;
                     }
                     
-                    // 정상 응답이 아닐 경우(예: 400 Bad Request, 403 Forbidden 등), 구글의 세부 에러 메시지를 포함해 에러 throw
                     const errorMsg = responseData.error?.message || `상태 코드 ${response.status}`;
                     throw new Error(`구글 AI 서버 에러: ${errorMsg}`);
                 } catch (e) {
-                    // 마지막 시도마저 실패했거나 구체적인 세부 에러(예: 키 만료 등)일 때는 대기 없이 즉시 에러 배출
                     if (i === retries - 1 || e.message.includes("구글 AI 서버 에러")) {
                         throw e;
                     }
                 }
-                // 재시도 대기 시간 배수 적용 (Exponential Backoff)
                 await new Promise(res => setTimeout(res, delay));
                 delay *= 2;
             }
@@ -665,9 +677,9 @@
             }
 
             const key = getApiKey();
-            if (!key) {
+            if (!key || key.length < 5) {
                 openApiModal();
-                alertCustom('실시간 전용 분석을 사용하려면 먼저 우측 상단에서 Gemini API 키를 저장해야 합니다.');
+                alertCustom('⚠️ 실시간 분석 가동을 위해 먼저 구글 Gemini API 키를 저장해야 합니다.');
                 return;
             }
 
@@ -690,7 +702,7 @@
                     
                     if (currentProgress < 30) progressStatus.innerText = "유튜브 동영상 헤더 정보 분석 중...";
                     else if (currentProgress < 60) progressStatus.innerText = "구글 검색 연동 크롤러 가동 중...";
-                    else progressStatus.innerText = "Gemini 2.5 Flash 초지능 신학 아카이브 추론 프로세서 해체 중...";
+                    else progressStatus.innerText = "Gemini 2.5 Flash 초지능 신학 아카이브 추론 프로세서 가동 중...";
                 }
             }, 300);
 
@@ -766,7 +778,7 @@
                     }
                 };
 
-                // 안정적으로 작동하는 정식 릴리즈 모델로 엔드포인트 세팅
+                // 안정성이 검증된 gemini-2.5-flash 모델 엔드포인트 연동
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
 
                 const responseData = await fetchWithRetry(apiUrl, {
@@ -785,7 +797,7 @@
                 // JSON 결과 파싱
                 const textResult = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (!textResult) {
-                    throw new Error("Gemini AI의 가상 기성 텍스트 변환 결과가 비어있습니다.");
+                    throw new Error("Gemini AI의 텍스트 변환 결과가 유효하지 않습니다.");
                 }
 
                 const parsedSermon = JSON.parse(textResult);

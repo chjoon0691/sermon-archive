@@ -1,0 +1,17 @@
+name: Archive Sermon
+
+on:
+  workflow_dispatch:
+    inputs:
+      youtube_url:
+        description: "유튜브 설교 영상 주소"
+        required: true
+        type: string
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 준비 중
+        run: echo "설교 아카이브 워크플로 준비 중입니다."

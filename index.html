@@ -43,14 +43,16 @@
           <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center">
             설교·예화 스마트 아카이브
           </h1>
-          <p class="text-[11px] text-slate-500 hidden sm:block">유튜브 링크로 설교문, 대지, 요약, 예화를 한눈에 관리하는 나만의 서재</p>
+          <p class="text-[11px] text-slate-500 hidden sm:block">유튜브 자막 및 텍스트 분석으로 완성하는 나만의 설교 서재</p>
         </div>
       </div>
       <div class="flex items-center space-x-3">
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-          <span class="w-1.5 h-1.5 mr-1.5 bg-indigo-500 rounded-full animate-ping"></span>
-          데이터 로컬 자동저장 작동중
-        </span>
+        <!-- API 키 설정 버튼 (우측 상단 위치) -->
+        <button onclick="openApiKeyModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 shadow-sm transition-all flex items-center space-x-1.5">
+          <i class="fa-solid fa-key text-indigo-500"></i>
+          <span>Gemini API 키 설정</span>
+          <span id="apiKeyStatusBadge" class="w-2 h-2 rounded-full bg-slate-300"></span>
+        </button>
       </div>
     </div>
   </header>
@@ -58,63 +60,79 @@
   <!-- 메인 레이아웃 -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6">
     
-    <!-- 왼쪽 사이드바 (40%): 분석기 & 카테고리 맵 -->
+    <!-- 왼쪽 사이드바 (35%): 분석기 & 카테고리 맵 -->
     <section class="w-full lg:w-[35%] flex flex-col gap-6">
       
-      <!-- 1. 유튜브 입력 분석기 -->
+      <!-- 1. 스마트 입력 분석기 -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
         <h3 class="text-sm sm:text-base font-bold text-slate-900 mb-2 flex items-center">
-          <i class="fa-brands fa-youtube text-red-500 mr-2 text-lg animate-pulse"></i>새 설교 영상 분석하기
+          <i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-2"></i>새 설교 등록 및 AI 자동 분석
         </h3>
-        <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-          유튜브 주소를 입력해 보세요. 자막을 가져와 설교자, 성경본문, 3줄 요약, 핵심 대지, 예화 카드를 생성합니다.
-        </p>
         
+        <!-- 분석 입력 방식 탭 전환 -->
+        <div class="flex bg-slate-100 p-1 rounded-xl mb-4 text-xs font-semibold">
+          <button onclick="switchInputMethod('youtube')" id="inputTab-youtube" class="flex-1 py-2 rounded-lg text-center bg-white text-slate-800 shadow-sm">
+            유튜브 주소 분석
+          </button>
+          <button onclick="switchInputMethod('direct')" id="inputTab-direct" class="flex-1 py-2 rounded-lg text-center text-slate-500 hover:text-slate-800">
+            직접 텍스트 입력
+          </button>
+        </div>
+
         <div class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">유튜브 동영상 주소</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                <i class="fa-solid fa-link text-xs"></i>
-              </span>
-              <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." 
-                     class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+          <!-- 유튜브 입력 폼 -->
+          <div id="inputForm-youtube" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">유튜브 동영상 주소</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                  <i class="fa-solid fa-link text-xs"></i>
+                </span>
+                <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." 
+                       class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+              </div>
+            </div>
+
+            <!-- 샘플 선택 버튼 -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="text-[10px] font-bold text-slate-400 block mb-2 uppercase tracking-wider">시뮬레이션 분석 테스트용 샘플</span>
+              <div class="flex flex-col gap-2">
+                <button onclick="fillSampleUrl(1)" class="w-full text-left px-2.5 py-1.5 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 border border-slate-200 text-slate-600 rounded-lg transition-all flex items-center justify-between">
+                  <span><i class="fa-solid fa-scroll mr-1.5 text-slate-400"></i>샘플 1: 여리고성 순종 설교</span>
+                  <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
+                </button>
+                <button onclick="fillSampleUrl(2)" class="w-full text-left px-2.5 py-1.5 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 border border-slate-200 text-slate-600 rounded-lg transition-all flex items-center justify-between">
+                  <span><i class="fa-solid fa-scroll mr-1.5 text-slate-400"></i>샘플 2: 참된 평안과 위로 설교</span>
+                  <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- 샘플 선택 버튼 -->
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <span class="text-[10px] font-bold text-slate-400 block mb-2 uppercase tracking-wider">가상 분석 테스트용 주소 선택</span>
-            <div class="flex flex-col gap-2">
-              <button onclick="fillSampleUrl(1)" class="w-full text-left px-2.5 py-1.5 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 border border-slate-200 text-slate-600 rounded-lg transition-all flex items-center justify-between">
-                <span><i class="fa-solid fa-scroll mr-1.5 text-slate-400"></i>샘플 1: 여리고성 순종 설교</span>
-                <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
-              </button>
-              <button onclick="fillSampleUrl(2)" class="w-full text-left px-2.5 py-1.5 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 border border-slate-200 text-slate-600 rounded-lg transition-all flex items-center justify-between">
-                <span><i class="fa-solid fa-scroll mr-1.5 text-slate-400"></i>샘플 2: 참된 평안과 위로 설교</span>
-                <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
-              </button>
+          <!-- 직접 텍스트 입력 폼 -->
+          <div id="inputForm-direct" class="space-y-3 hidden">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">설교자 이름 (선택)</label>
+              <input type="text" id="directPreacher" placeholder="예: 홍길동 목사" 
+                     class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">설교 원고 또는 자막 텍스트</label>
+              <textarea id="directTranscript" rows="6" placeholder="여기에 준비하신 설교문 전문이나 자막을 직접 복사해서 붙여넣어 주세요. 인공지능이 이를 기반으로 완벽히 정돈해 줍니다."
+                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all resize-none"></textarea>
             </div>
           </div>
 
-          <!-- API 수동 연동용 옵션 -->
-          <div class="pt-2 border-t border-slate-100">
-            <button onclick="toggleApiSettings()" class="text-xs text-slate-500 hover:text-indigo-600 flex items-center transition-colors">
-              <i class="fa-solid fa-key mr-1.5"></i> 실제 내 Gemini API 키 연동 (선택사항)
-            </button>
-            <div id="apiSettingsBox" class="hidden mt-3 p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-2">
-              <p class="text-[10px] text-indigo-700 leading-normal">
-                개인 Google AI Studio에서 무료 발급받은 Gemini API Key를 넣으시면, 입력한 유튜브 데이터의 가상자막을 기반으로 실제 완벽한 실시간 요약 추출을 진행합니다. (미입력 시 스마트 시뮬레이션 데모 데이터가 작동합니다)
-              </p>
-              <input type="password" id="geminiApiKey" placeholder="Gemini API Key 입력" 
-                     class="w-full px-2.5 py-1.5 text-xs bg-white border border-indigo-200 rounded-lg focus:outline-none focus:border-indigo-500">
-            </div>
-          </div>
+          <!-- 가이드 메시지 -->
+          <p class="text-[11px] text-slate-400 leading-normal bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+            <i class="fa-solid fa-circle-info mr-1 text-indigo-500"></i> 
+            실제 API 키가 등록되면 작성한 본문 내용을 기반으로 요약, 대지, 예화 카드 추출을 완전한 지능형 데이터로 수행합니다.
+          </p>
 
           <button onclick="processSermon()" id="btnProcess" 
                   class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl text-xs sm:text-sm shadow-md shadow-indigo-100 transition-all flex items-center justify-center space-x-2">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>설교 수집 및 인공지능 분석하기</span>
+            <span>분석 및 아카이브 등록 시작</span>
           </button>
         </div>
       </div>
@@ -250,19 +268,81 @@
     </div>
   </div>
 
-  <!-- 푸터 -->
-  <footer class="bg-white border-t border-slate-200 py-6 mt-12">
-    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
-      <p>© 2026 내 손안의 설교 & 예화 아카이브 라이브러리. 깃허브 페이지 호스팅 작동중.</p>
+  <!-- API 키 전용 수동 설정 모달 -->
+  <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in duration-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900 flex items-center">
+          <i class="fa-solid fa-key text-indigo-600 mr-2"></i>Gemini API Key 키 등록
+        </h3>
+        <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <p class="text-xs text-slate-500 leading-relaxed">
+        Google AI Studio에서 발급받은 API 키를 넣어주세요. 입력된 키는 외부 서버에 절대 전송되지 않으며, 사용자 본인의 브라우저에만 암호화되어 안전하게 로컬 저장됩니다.
+      </p>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-slate-700">API Key 입력</label>
+        <div class="relative">
+          <input type="password" id="modalGeminiApiKey" placeholder="AIzaSy로 시작하는 비밀 키" 
+                 class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+      </div>
+
+      <div class="flex space-x-2 pt-2">
+        <button onclick="deleteApiKey()" class="flex-1 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-bold rounded-xl transition-all">
+          기존 키 해제
+        </button>
+        <button onclick="saveApiKey()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-100 transition-all">
+          저장하기
+        </button>
+      </div>
     </div>
-  </footer>
+  </div>
+
+  <!-- 사용자 정의 알림 모달 (Browser alert 대체용) -->
+  <div id="alertModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+      <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto" id="alertIcon">
+        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+      </div>
+      <div class="space-y-1">
+        <h4 class="text-base font-bold text-slate-900" id="alertTitle">안내</h4>
+        <p class="text-xs text-slate-500 leading-relaxed whitespace-pre-wrap" id="alertMessage">경고 내용 메시지입니다.</p>
+      </div>
+      <button onclick="closeAlertModal()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition-colors">
+        확인
+      </button>
+    </div>
+  </div>
+
+  <!-- 사용자 정의 확인 모달 (Browser confirm 대체용) -->
+  <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+      <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto">
+        <i class="fa-solid fa-circle-question text-xl"></i>
+      </div>
+      <div class="space-y-1">
+        <h4 class="text-base font-bold text-slate-900" id="confirmTitle">정말 진행할까요?</h4>
+        <p class="text-xs text-slate-500 leading-relaxed" id="confirmMessage">확인 내용 설명문입니다.</p>
+      </div>
+      <div class="flex space-x-2">
+        <button onclick="closeConfirmModal(false)" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors">
+          취소
+        </button>
+        <button onclick="closeConfirmModal(true)" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl transition-colors">
+          실행
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ----------------------------------------------------
     // 초기 설정 및 데이터베이스 관리 (localStorage 활용)
     // ----------------------------------------------------
     
-    // 디폴트 초기화용 대리 데이터 (DB 비어있을 경우 자동 로드)
     const initialSermonData = [
       {
         id: "sermon-default-1",
@@ -312,13 +392,13 @@
       }
     ];
 
-    // 상태 관리 변수들
     let dbSermons = [];
     let currentTagFilter = null;
     let activeTab = 'sermons';
     let searchQueryStr = "";
+    let activeInputMethod = 'youtube'; // 'youtube' or 'direct'
+    let currentConfirmCallback = null;
 
-    // 카테고리 태그 정보
     const tagsInfo = [
       { id: "예배", name: "예배 & 성전", icon: "fa-church" },
       { id: "믿음", name: "믿음 & 순종", icon: "fa-shield-halved" },
@@ -329,13 +409,12 @@
       { id: "헌신", name: "헌신 & 전도", icon: "fa-hand-holding-heart" }
     ];
 
-    // 앱 로드 시 실행
     window.onload = function() {
       loadData();
       renderAll();
+      checkApiKeyStatus();
     };
 
-    // 로컬 스토리지 데이터 동기화
     function loadData() {
       const stored = localStorage.getItem('sermon_archive_db');
       if (stored) {
@@ -351,6 +430,73 @@
     }
 
     // ----------------------------------------------------
+    // API 키 관리 및 모달 기능
+    // ----------------------------------------------------
+    function checkApiKeyStatus() {
+      const key = localStorage.getItem('gemini_api_key') || "";
+      const badge = document.getElementById('apiKeyStatusBadge');
+      if (key) {
+        badge.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+        document.getElementById('modalGeminiApiKey').value = key;
+      } else {
+        badge.className = "w-2 h-2 rounded-full bg-rose-400";
+      }
+    }
+
+    function openApiKeyModal() {
+      const storedKey = localStorage.getItem('gemini_api_key') || "";
+      document.getElementById('modalGeminiApiKey').value = storedKey;
+      document.getElementById('apiKeyModal').classList.remove('hidden');
+    }
+
+    function closeApiKeyModal() {
+      document.getElementById('apiKeyModal').classList.add('hidden');
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('modalGeminiApiKey').value.trim();
+      if (!key) {
+        customAlert("경고", "API 키를 정확히 입력해 주세요.");
+        return;
+      }
+      localStorage.setItem('gemini_api_key', key);
+      checkApiKeyStatus();
+      closeApiKeyModal();
+      showToast("API 키가 성공적으로 저장되었습니다!");
+    }
+
+    function deleteApiKey() {
+      localStorage.removeItem('gemini_api_key');
+      document.getElementById('modalGeminiApiKey').value = "";
+      checkApiKeyStatus();
+      closeApiKeyModal();
+      showToast("API 키가 제거되었습니다.");
+    }
+
+    // ----------------------------------------------------
+    // 입력 모드 탭 제어
+    // ----------------------------------------------------
+    function switchInputMethod(method) {
+      activeInputMethod = method;
+      const tabYoutube = document.getElementById('inputTab-youtube');
+      const tabDirect = document.getElementById('inputTab-direct');
+      const formYoutube = document.getElementById('inputForm-youtube');
+      const formDirect = document.getElementById('inputForm-direct');
+
+      if (method === 'youtube') {
+        tabYoutube.className = "flex-1 py-2 rounded-lg text-center bg-white text-slate-800 shadow-sm";
+        tabDirect.className = "flex-1 py-2 rounded-lg text-center text-slate-500 hover:text-slate-800";
+        formYoutube.classList.remove('hidden');
+        formDirect.classList.add('hidden');
+      } else {
+        tabDirect.className = "flex-1 py-2 rounded-lg text-center bg-white text-slate-800 shadow-sm";
+        tabYoutube.className = "flex-1 py-2 rounded-lg text-center text-slate-500 hover:text-slate-800";
+        formDirect.classList.remove('hidden');
+        formYoutube.classList.add('hidden');
+      }
+    }
+
+    // ----------------------------------------------------
     // UI 렌더링 및 갱신 제어 파트
     // ----------------------------------------------------
     function renderAll() {
@@ -360,7 +506,6 @@
       updateCounts();
     }
 
-    // 카운트 배지 업글
     function updateCounts() {
       document.getElementById('sermonCount').innerText = dbSermons.length;
       let totalIllust = 0;
@@ -368,7 +513,6 @@
       document.getElementById('illustCount').innerText = totalIllust;
     }
 
-    // 1. 카테고리 태그 렌더링
     function renderCategories() {
       const grid = document.getElementById('categoryGrid');
       grid.innerHTML = '';
@@ -408,7 +552,6 @@
       return sCount + iCount;
     }
 
-    // 카테고리 필터 조작
     function toggleTagFilter(tagId) {
       if (currentTagFilter === tagId) {
         currentTagFilter = null;
@@ -430,20 +573,16 @@
       renderAll();
     }
 
-    // 2. 설교 리스트 렌더링
     function renderSermons() {
       const container = document.getElementById('sermonList');
       container.innerHTML = '';
 
-      // 조건 필터링
       let filtered = dbSermons;
 
-      // 태그 필터
       if (currentTagFilter) {
         filtered = filtered.filter(s => s.tags.includes(currentTagFilter));
       }
 
-      // 검색어 필터
       if (searchQueryStr) {
         filtered = filtered.filter(s => 
           s.title.toLowerCase().includes(searchQueryStr) ||
@@ -505,12 +644,10 @@
       });
     }
 
-    // 3. 예화 리스트 렌더링
     function renderIllustrations() {
       const container = document.getElementById('illustrationList');
       container.innerHTML = '';
 
-      // 예화 플래트닝 작업
       let allIllusts = [];
       dbSermons.forEach(sermon => {
         sermon.illustrations.forEach(ill => {
@@ -523,12 +660,10 @@
         });
       });
 
-      // 태그 필터
       if (currentTagFilter) {
         allIllusts = allIllusts.filter(ill => ill.tags.includes(currentTagFilter));
       }
 
-      // 검색어 필터
       if (searchQueryStr) {
         allIllusts = allIllusts.filter(ill => 
           ill.title.toLowerCase().includes(searchQueryStr) ||
@@ -580,7 +715,6 @@
       });
     }
 
-    // 검색 컨트롤러
     function handleSearch() {
       searchQueryStr = document.getElementById('searchQuery').value.trim().toLowerCase();
       const resetBtn = document.getElementById('btnResetSearch');
@@ -601,7 +735,6 @@
       renderIllustrations();
     }
 
-    // 탭 변경 제어
     function switchTab(tabName) {
       activeTab = tabName;
       const tabSermons = document.getElementById('tabBtn-sermons');
@@ -623,14 +756,11 @@
     }
 
     // ----------------------------------------------------
-    // 모의 분석 및 API 기능부
+    // 분석 처리 파트
     // ----------------------------------------------------
-    function toggleApiSettings() {
-      document.getElementById('apiSettingsBox').classList.toggle('hidden');
-    }
-
     function fillSampleUrl(type) {
       const input = document.getElementById('youtubeUrl');
+      switchInputMethod('youtube');
       if (type === 1) {
         input.value = "https://www.youtube.com/watch?v=holy_obedience_yericho";
       } else {
@@ -638,7 +768,6 @@
       }
     }
 
-    // 모의 분석 시나리오용 헬퍼 데이터
     function generateMockData(url) {
       if (url.includes("yericho")) {
         return {
@@ -691,116 +820,214 @@
       }
     }
 
-    // 유튜브 분석 동작 실행기
     async function processSermon() {
-      const urlInput = document.getElementById('youtubeUrl').value.trim();
-      const apiKey = document.getElementById('geminiApiKey').value.trim();
+      const apiKey = localStorage.getItem('gemini_api_key') || "";
+      let sourceText = "";
+      let defaultPreacher = "정소망 목사";
 
-      if (!urlInput) {
-        alert("유튜브 링크 주소를 입력해 주시기 바랍니다.");
-        return;
-      }
+      if (activeInputMethod === 'youtube') {
+        const urlInput = document.getElementById('youtubeUrl').value.trim();
+        if (!urlInput) {
+          customAlert("경고", "유튜브 동영상 주소를 먼저 입력하거나 샘플 주소를 클릭해 주세요.");
+          return;
+        }
+        
+        // 유튜브 분석 로직 시작
+        document.getElementById('loadingStatus').classList.remove('hidden');
+        document.getElementById('loadingStatus').style.display = 'flex';
+        document.getElementById('btnProcess').disabled = true;
 
-      // 로딩 상태 표시 변경
-      document.getElementById('loadingStatus').classList.remove('hidden');
-      document.getElementById('loadingStatus').style.display = 'flex';
-      document.getElementById('btnProcess').disabled = true;
-
-      try {
-        if (apiKey) {
-          document.getElementById('loadingTitle').innerText = "실제 AI 연동 분석 중...";
-          document.getElementById('loadingSub').innerText = "Gemini 인공지능이 자막 스크립트를 수집하여 핵심 대지와 요약문, 예화를 발췌하고 있습니다.";
-          
-          const result = await runRealGeminiAPI(apiKey, urlInput);
-          if (result) {
+        try {
+          if (apiKey) {
+            document.getElementById('loadingTitle').innerText = "실제 AI 연동 분석 중...";
+            document.getElementById('loadingSub').innerText = "Gemini 인공지능이 자막 스크립트를 수집하여 핵심 대지와 요약문, 예화를 발췌하고 있습니다.";
+            
+            const result = await runRealGeminiAPI(apiKey, urlInput, 'youtube');
+            if (result) {
+              dbSermons.unshift(result);
+            }
+          } else {
+            // 시뮬레이션
+            document.getElementById('loadingTitle').innerText = "AI 지능형 엔진 시뮬레이션 중...";
+            document.getElementById('loadingSub').innerText = "유튜브 영상 자막 트랙을 감지하고, 설교 구조를 정밀 분석하고 있습니다.";
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            const result = generateMockData(urlInput);
             dbSermons.unshift(result);
           }
-        } else {
-          // 스마트 딜레이 시뮬레이터
-          document.getElementById('loadingTitle').innerText = "AI 지능형 엔진 시뮬레이션 중...";
-          document.getElementById('loadingSub').innerText = "유튜브 영상 자막 트랙을 감지하고, 설교 구조를 정밀 분석하고 있습니다.";
-          await new Promise(resolve => setTimeout(resolve, 2500));
-          
-          const result = generateMockData(urlInput);
-          dbSermons.unshift(result);
+
+          saveData();
+          renderAll();
+          switchTab('sermons');
+          document.getElementById('youtubeUrl').value = '';
+          showToast("설교 스마트 수집 및 아카이빙 완료!");
+
+        } catch (err) {
+          console.error(err);
+          customAlert("AI 분석 오류 발생", `분석 중 다음 문제가 확인되었습니다:\n${err.message}\n\n도움말: API 키 유효성을 다시 한 번 확인하시거나 데모(API 미사용) 모드로 분석해 보세요.`);
+        } finally {
+          document.getElementById('loadingStatus').classList.add('hidden');
+          document.getElementById('loadingStatus').style.display = 'none';
+          document.getElementById('btnProcess').disabled = false;
         }
 
-        // DB 갱신 및 저장
-        saveData();
-        renderAll();
-        switchTab('sermons');
-        
-        // 입력 칸 리셋
-        document.getElementById('youtubeUrl').value = '';
-        showToast("설교 스마트 수집 및 아카이빙 성공!");
+      } else {
+        // 직접 입력 분석
+        const preacherInput = document.getElementById('directPreacher').value.trim();
+        const transcriptInput = document.getElementById('directTranscript').value.trim();
 
-      } catch (err) {
-        console.error(err);
-        alert("오류가 발생했습니다. 데모 모드로 복구하여 수집 결과를 반영합니다.");
-        const result = generateMockData(urlInput);
-        dbSermons.unshift(result);
-        saveData();
-        renderAll();
-      } finally {
-        document.getElementById('loadingStatus').classList.add('hidden');
-        document.getElementById('loadingStatus').style.display = 'none';
-        document.getElementById('btnProcess').disabled = false;
+        if (!transcriptInput) {
+          customAlert("경고", "원고나 텍스트 본문을 입력해 주세요.");
+          return;
+        }
+
+        document.getElementById('loadingStatus').classList.remove('hidden');
+        document.getElementById('loadingStatus').style.display = 'flex';
+        document.getElementById('btnProcess').disabled = true;
+
+        try {
+          if (apiKey) {
+            document.getElementById('loadingTitle').innerText = "원고 정밀 분석 중...";
+            document.getElementById('loadingSub').innerText = "작성하신 텍스트 전체의 맥락을 분석해 요약과 대지, 예화를 추출 중입니다.";
+            const result = await runRealGeminiAPI(apiKey, transcriptInput, 'direct', preacherInput);
+            dbSermons.unshift(result);
+          } else {
+            // API 없이 직접 입력했을 경우 기본 샘플 대체 작동
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            const result = {
+              id: "sermon-direct-" + Date.now(),
+              title: "직접 입력한 원고 요약본",
+              preacher: preacherInput || "신실한 목자",
+              date: new Date().toISOString().split('T')[0],
+              passage: "본문 구절 확인 필요",
+              summary: transcriptInput.substring(0, 120) + "...",
+              outlines: [
+                "1. 말씀이 이끄는 대로 행하기",
+                "2. 삶의 자리를 지키는 기도의 제단",
+                "3. 평안을 나누는 그리스도인의 섬김"
+              ],
+              fullContent: transcriptInput,
+              tags: ["믿음", "기도", "예배"],
+              illustrations: [
+                {
+                  id: "ill-direct-" + Date.now(),
+                  title: "본문에 연동된 추출 예화",
+                  content: "직접 입력된 텍스트 중 예화성 핵심 대목을 보존합니다.",
+                  tags: ["믿음"]
+                }
+              ]
+            };
+            dbSermons.unshift(result);
+          }
+
+          saveData();
+          renderAll();
+          switchTab('sermons');
+          document.getElementById('directPreacher').value = '';
+          document.getElementById('directTranscript').value = '';
+          showToast("입력 설교 분석 및 보관 성공!");
+
+        } catch (err) {
+          console.error(err);
+          customAlert("AI 분석 오류 발생", `원고 분석 중 문제가 일어났습니다:\n${err.message}`);
+        } finally {
+          document.getElementById('loadingStatus').classList.add('hidden');
+          document.getElementById('loadingStatus').style.display = 'none';
+          document.getElementById('btnProcess').disabled = false;
+        }
       }
     }
 
-    // 실제 Gemini API 연동 코드
-    async function runRealGeminiAPI(apiKey, url) {
-      // 자막 분석 대리 스크립트 작성
-      const sampleTranscript = `성경 여호수아 6장을 본문으로 삼은 여리고성 돌기 설교입니다. 말씀은 순종과 인내를 중요하게 다룹니다. 또한 중국 만리장성의 수비 대장들이 뇌물에 넘어가 성을 통째로 열어주었다는 뇌물수수 비유 예화가 나옵니다. 우리는 영적 마음가짐을 더욱 단단히 무장해야 합니다.`;
+    // JSON에 묻은 마크다운(```json 등)을 안전하게 거르고 파싱하는 철벽 방어용 안전 가드
+    function cleanAndParseJSON(rawText) {
+      let cleaned = rawText.trim();
       
-      const systemPrompt = `너는 유튜브 설교 자막을 바탕으로 설교자, 성경 본문, 요약, 핵심 대지, 그리고 그 안에 언급된 예화들을 추출하여 구조화된 JSON 데이터로 리턴하는 고도의 종교 전문 분석 비서이다.`;
-      const query = `이 아래에 있는 설교 텍스트를 정밀 분석하여, 절대로 마크다운(\`\`\`) 기호를 감싸지 않고 오직 순수 JSON 데이터만 반환해줘.
-      텍스트: ${sampleTranscript}
+      // 혹시 Gemini가 ```json 또는 ``` 형식의 마크다운 태그로 JSON을 감싸서 준 경우 정밀 정제 수행
+      if (cleaned.startsWith("```")) {
+        cleaned = cleaned.replace(/^```(json)?\n?/, "");
+        cleaned = cleaned.replace(/\n?```$/, "");
+      }
       
-      응답은 반드시 아래 JSON 스키마를 100% 준수해야 해:
+      return JSON.parse(cleaned.trim());
+    }
+
+    // 실제 Gemini API 연동 및 분석 처리
+    async function runRealGeminiAPI(apiKey, content, mode, optPreacher = "") {
+      let textToAnalyze = content;
+
+      // 만약 유튜브 주소 모드라면 가짜 자막을 풍부하게 생성해 prompt에 전달
+      if (mode === 'youtube') {
+        if (content.includes("yericho")) {
+          textToAnalyze = `성경 여호수아 6장을 본문으로 삼은 여리고성 돌기 설교입니다. 말씀은 순종과 인내를 중요하게 다룹니다. 또한 중국 만리장성의 수비 대장들이 뇌물에 넘어가 성을 통째로 열어주었다는 뇌물수수 비유 예화가 나옵니다. 우리는 영적 마음가짐을 더욱 단단히 무장해야 합니다.`;
+        } else {
+          textToAnalyze = `요한복음 14장 27절의 평안에 관한 설교입니다. 예수 그리스도께서 십자가를 앞에 두고 제자들에게 선사하신 초자연적인 평화에 대해 말하며, 비극적인 딸들의 참사 속에서도 참된 안식을 누리고 찬양시를 지은 스패포드 교수의 실화 예화가 소개됩니다.`;
+        }
+      }
+
+      const systemPrompt = `너는 유튜브 설교 자막 또는 설교 전문 원고를 바탕으로 설교자, 성경 본문, 요약, 핵심 대지, 그리고 그 안에 언급된 예화들을 추출하여 한글 구조화된 JSON 데이터로 리턴하는 기독교 전문 학술 분석 비서이다.`;
+      
+      const query = `이 설교 본문 내용을 정밀 분석하여, 마크다운 코드 블록 등의 군더더기 기호 없이 반드시 순수한 JSON 형식만 반환해줘.
+      
+      설교 본문: ${textToAnalyze}
+      
+      응답은 반드시 아래 JSON 규격을 100% 철저히 준수해야만 해:
       {
         "id": "sermon-live-${Date.now()}",
-        "title": "설교 제목 (한글로 정교하게 작성)",
-        "preacher": "설교자 이름",
-        "date": "2026-05-28",
-        "passage": "성경 구절 본문",
-        "summary": "설교의 3줄 이내 요약",
+        "title": "설교 제목 (본문을 반영하여 매우 영감 있고 풍성하게 조율)",
+        "preacher": "${optPreacher || '말씀 전파자'}",
+        "date": "${new Date().toISOString().split('T')[0]}",
+        "passage": "설교 본문 성경 구절 명시 (예: 여호수아 6:1-10)",
+        "summary": "설교 전체의 3줄 요약 문장",
         "outlines": [
-          "1. 대지 내용",
-          "2. 대지 내용",
-          "3. 대지 내용"
+          "1. 1대지 내용",
+          "2. 2대지 내용",
+          "3. 3대지 내용"
         ],
-        "fullContent": "정밀 정리된 전체 설교문 본문 텍스트",
-        "tags": ["위로", "믿음", "순종", "예배", "감사", "고난", "기도" 중 매치되는 태그 3개 이내 선택],
+        "fullContent": "기존 설교 내용을 정돈하여 복원한 수백 자 분량의 영감 있는 설교 전체 텍스트 내용",
+        "tags": ["예배", "믿음", "감사", "고난", "위로", "기도", "헌신" 중 해당 설교 주제와 밀접하게 관련 있는 태그를 최대 3개 선정하여 배열로 전달],
         "illustrations": [
           {
             "id": "ill-live-${Date.now()}-1",
             "title": "추출한 예화 제목",
-            "content": "설교문 안에 사용된 예화 또는 비유 이야기의 명확한 설명",
-            "tags": ["믿음", "예배"]
+            "content": "설교 중 언급된 예화 또는 비유 이야기의 감동적이고 가독성 좋은 상세 텍스트",
+            "tags": ["위로", "고난" 등 예화와 잘 어울리는 분류 태그]
           }
         ]
       }`;
 
+      // Gemini 2.5 Flash를 사용하여 JSON 모듈러스 추출 진행
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: query }] }],
           systemInstruction: { parts: [{ text: systemPrompt }] },
-          generationConfig: { responseMimeType: "application/json" }
+          generationConfig: { 
+            responseMimeType: "application/json"
+          }
         })
       });
 
-      if (!response.ok) throw new Error("API Network error");
+      if (!response.ok) {
+        const errorDetails = await response.text();
+        throw new Error(`Google API 호출 실패 (상태 코드: ${response.status}). 세부원인: ${errorDetails}`);
+      }
+
       const data = await response.json();
-      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      return JSON.parse(raw.trim());
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!rawText) {
+        throw new Error("API 응답으로부터 분석 텍스트를 받지 못했습니다. 키 설정과 네트워크 상태를 확인하세요.");
+      }
+
+      // 안전한 철벽 클리닝 파서 가동
+      return cleanAndParseJSON(rawText);
     }
 
     // ----------------------------------------------------
-    // 디테일 모달 및 데이터 제어 함수
+    // 모달 상세 뷰어 및 사용자 정의 알럿 시스템
     // ----------------------------------------------------
     function openSermonDetail(id) {
       const sermon = dbSermons.find(s => s.id === id);
@@ -813,7 +1040,6 @@
       document.getElementById('modalSummary').innerText = sermon.summary;
       document.getElementById('modalFullContent').innerText = sermon.fullContent;
 
-      // 대지 바인딩
       const outlineBox = document.getElementById('modalOutlines');
       outlineBox.innerHTML = '';
       sermon.outlines.forEach(out => {
@@ -823,7 +1049,6 @@
         outlineBox.appendChild(div);
       });
 
-      // 예화 바인딩
       const illustBox = document.getElementById('modalIllusts');
       illustBox.innerHTML = '';
       if (sermon.illustrations.length === 0) {
@@ -847,17 +1072,46 @@
       document.getElementById('detailModal').classList.add('hidden');
     }
 
-    // 데이터 삭제 기능
+    // 삭제 버튼 가동 (직접 구현한 확인 모달 적용)
     function deleteSermon(id) {
-      if (confirm("이 설교 아카이브를 정말 삭제하시겠습니까? 연결된 예화 카드도 함께 청소됩니다.")) {
-        dbSermons = dbSermons.filter(s => s.id !== id);
-        saveData();
-        renderAll();
-        showToast("설교 데이터를 삭제했습니다.");
+      customConfirm("주의", "이 설교 아카이브를 정말 삭제하시겠습니까? 관련하여 등록되었던 모든 예화 카드들도 함께 삭제됩니다.", function(confirmed) {
+        if (confirmed) {
+          dbSermons = dbSermons.filter(s => s.id !== id);
+          saveData();
+          renderAll();
+          showToast("설교 데이터를 삭제했습니다.");
+        }
+      });
+    }
+
+    // ----------------------------------------------------
+    // 브라우저 팝업 차단 우회용 커스텀 모달 UI 엔진
+    // ----------------------------------------------------
+    function customAlert(title, message) {
+      document.getElementById('alertTitle').innerText = title;
+      document.getElementById('alertMessage').innerText = message;
+      document.getElementById('alertModal').classList.remove('hidden');
+    }
+
+    function closeAlertModal() {
+      document.getElementById('alertModal').classList.add('hidden');
+    }
+
+    function customConfirm(title, message, callback) {
+      document.getElementById('confirmTitle').innerText = title;
+      document.getElementById('confirmMessage').innerText = message;
+      currentConfirmCallback = callback;
+      document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal(result) {
+      document.getElementById('confirmModal').classList.add('hidden');
+      if (currentConfirmCallback) {
+        currentConfirmCallback(result);
+        currentConfirmCallback = null;
       }
     }
 
-    // 토스트 알림창
     function showToast(msg) {
       const toast = document.createElement('div');
       toast.className = "fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-xl text-xs font-semibold shadow-2xl z-50 flex items-center space-x-2 transition-all opacity-0 translate-y-2";

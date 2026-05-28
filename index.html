@@ -3,134 +3,188 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>설교 아카이브</title>
-  <meta name="description" content="유튜브 설교 스크립트, 요약, 대지, 예화, 주제 색인을 정리하는 설교 아카이브입니다." />
+  <title>설교 아카이브 생성기</title>
+  <meta name="description" content="유튜브 설교 주소를 입력하여 설교문, 요약, 대지, 예화, 주제 색인을 생성하는 설교 아카이브 입력 화면입니다." />
   <style>
     :root {
-      --bg: #f6f7fb;
-      --surface: #ffffff;
-      --surface-soft: #f1f4f9;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --soft: #eef2ff;
+      --soft2: #f1f5f9;
       --text: #172033;
       --muted: #667085;
-      --line: #d9e0ea;
+      --line: #d8dfec;
       --primary: #3b5bdb;
       --primary-dark: #263fa3;
-      --primary-soft: #edf1ff;
       --accent: #0f766e;
+      --danger: #b42318;
       --warning: #92400e;
-      --shadow: 0 16px 45px rgba(17, 24, 39, 0.08);
-      --radius: 22px;
+      --success: #047857;
+      --shadow: 0 18px 48px rgba(15, 23, 42, 0.09);
+      --radius: 24px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Roboto, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(59, 91, 219, 0.16), transparent 34rem),
-        radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 28rem),
-        var(--bg);
       color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(59, 91, 219, 0.17), transparent 32rem),
+        radial-gradient(circle at 92% 6%, rgba(15, 118, 110, 0.12), transparent 30rem),
+        var(--bg);
       line-height: 1.65;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+    a { color: inherit; text-decoration: none; }
 
     .container {
       width: min(1180px, calc(100% - 36px));
       margin: 0 auto;
     }
 
-    header {
-      padding: 48px 0 28px;
-    }
+    header { padding: 44px 0 20px; }
 
     .hero {
       display: grid;
-      grid-template-columns: 1.3fr 0.7fr;
-      gap: 26px;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
       align-items: stretch;
     }
 
-    .hero-card,
-    .panel,
-    .sermon-card,
-    .detail-card {
-      background: rgba(255, 255, 255, 0.88);
-      border: 1px solid rgba(217, 224, 234, 0.9);
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(216, 223, 236, 0.95);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
 
-    .hero-card {
+    .hero-main {
       padding: 34px;
-      overflow: hidden;
       position: relative;
+      overflow: hidden;
     }
 
-    .hero-card::after {
+    .hero-main::after {
       content: "";
       position: absolute;
-      width: 190px;
-      height: 190px;
-      border-radius: 50%;
-      right: -72px;
-      bottom: -78px;
-      background: var(--primary-soft);
+      width: 210px;
+      height: 210px;
+      right: -84px;
+      bottom: -94px;
+      border-radius: 999px;
+      background: var(--soft);
       z-index: 0;
     }
 
-    .hero-content {
-      position: relative;
-      z-index: 1;
-    }
+    .hero-inner { position: relative; z-index: 1; }
 
     .eyebrow {
       display: inline-flex;
-      gap: 8px;
       align-items: center;
-      padding: 6px 12px;
+      gap: 8px;
+      padding: 7px 12px;
       border-radius: 999px;
-      background: var(--primary-soft);
+      background: var(--soft);
       color: var(--primary-dark);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       margin-bottom: 16px;
     }
 
     h1 {
       margin: 0;
       font-size: clamp(32px, 5vw, 52px);
-      letter-spacing: -0.055em;
+      letter-spacing: -0.06em;
       line-height: 1.08;
     }
 
-    .hero p {
+    .lead {
       margin: 16px 0 0;
+      max-width: 780px;
       color: var(--muted);
       font-size: 17px;
-      max-width: 720px;
     }
 
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 24px;
+    .notice {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: var(--warning);
+      font-size: 14px;
+    }
+
+    .hero-side {
+      padding: 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-stat {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff, #f8fafc);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .mini-stat strong {
+      display: block;
+      font-size: 26px;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .mini-stat span { color: var(--muted); font-size: 14px; }
+
+    main { padding: 18px 0 60px; }
+
+    .input-section { padding: 24px; }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 24px;
+      letter-spacing: -0.04em;
+      line-height: 1.25;
+    }
+
+    .url-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 13px 14px;
+      background: #fff;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(59, 91, 219, 0.11);
     }
 
     .btn {
       border: 0;
-      border-radius: 14px;
-      padding: 12px 16px;
-      font-weight: 800;
+      border-radius: 15px;
+      padding: 13px 17px;
+      font-weight: 900;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -138,133 +192,128 @@
       gap: 8px;
       transition: 0.2s ease;
       font-size: 14px;
+      white-space: nowrap;
     }
 
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-ghost { background: var(--soft2); color: var(--text); }
+    .btn-ghost:hover { background: #e6ebf3; }
+    .btn-danger { background: #fee4e2; color: var(--danger); }
 
-    .btn-primary:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
-    }
-
-    .btn-ghost {
-      background: var(--surface-soft);
-      color: var(--text);
-    }
-
-    .btn-ghost:hover {
-      background: #e8edf6;
-    }
-
-    .stat-panel {
-      padding: 22px;
+    .options-grid {
       display: grid;
-      gap: 14px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: linear-gradient(180deg, #fff, #f8fafc);
-      border: 1px solid var(--line);
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 28px;
-      letter-spacing: -0.03em;
-    }
-
-    .stat span {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    main {
-      padding: 8px 0 56px;
-    }
-
-    .toolbar {
-      margin-top: 18px;
-      padding: 18px;
-      display: grid;
-      grid-template-columns: 1.4fr 0.75fr 0.75fr 0.75fr;
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      align-items: center;
+      margin-top: 14px;
     }
 
-    input,
-    select {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px 14px;
-      background: #fff;
-      color: var(--text);
-      font-size: 14px;
-      outline: none;
-    }
-
-    input:focus,
-    select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(59, 91, 219, 0.11);
-    }
-
-    .tabs {
+    .option {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 22px 0 16px;
-    }
-
-    .tab {
+      gap: 9px;
+      align-items: center;
+      padding: 12px;
       border: 1px solid var(--line);
+      border-radius: 16px;
       background: #fff;
       color: var(--muted);
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 800;
-      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
     }
 
-    .tab.active {
-      background: var(--text);
-      color: #fff;
-      border-color: var(--text);
-    }
+    .option input { width: auto; }
 
-    .layout {
+    .advanced {
+      margin-top: 14px;
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .help {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-wrap {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
       gap: 22px;
       align-items: start;
     }
 
-    .sermon-list {
+    .panel { padding: 22px; }
+
+    .steps {
       display: grid;
-      gap: 16px;
+      gap: 10px;
+      margin-top: 14px;
     }
 
-    .sermon-card {
-      padding: 22px;
-      cursor: pointer;
-      transition: 0.2s ease;
+    .step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
     }
 
-    .sermon-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(59, 91, 219, 0.35);
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--soft2);
+      color: var(--muted);
+      font-weight: 900;
+      flex: 0 0 auto;
+      font-size: 13px;
     }
 
-    .sermon-meta {
+    .step.active { border-color: rgba(59, 91, 219, 0.45); background: var(--soft); }
+    .step.active .step-number { background: var(--primary); color: #fff; }
+    .step.done { border-color: rgba(4, 120, 87, 0.35); background: #ecfdf5; }
+    .step.done .step-number { background: var(--success); color: #fff; }
+    .step.error { border-color: rgba(180, 35, 24, 0.35); background: #fff1f0; }
+    .step.error .step-number { background: var(--danger); color: #fff; }
+
+    .step strong { display: block; line-height: 1.3; }
+    .step span { color: var(--muted); font-size: 13px; }
+
+    .result-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .result-empty {
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 30px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .sermon-title {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.05em;
+      line-height: 1.25;
+    }
+
+    .meta {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 10px;
+      margin: 10px 0 0;
       color: var(--muted);
       font-size: 13px;
     }
@@ -272,407 +321,293 @@
     .pill {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 5px 9px;
       border-radius: 999px;
-      background: var(--surface-soft);
+      padding: 5px 10px;
+      background: var(--soft2);
       color: var(--muted);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
-    .pill.primary {
-      background: var(--primary-soft);
-      color: var(--primary-dark);
-    }
+    .pill.primary { background: var(--soft); color: var(--primary-dark); }
+    .pill.accent { background: #ecfdf5; color: var(--success); }
 
-    .pill.accent {
-      background: #ecfdf5;
-      color: #047857;
-    }
-
-    .sermon-title {
-      margin: 0;
-      font-size: 22px;
-      letter-spacing: -0.035em;
-      line-height: 1.25;
-    }
-
-    .summary {
-      color: var(--muted);
-      margin: 10px 0 14px;
-    }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
-
-    aside {
-      position: sticky;
-      top: 18px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .panel {
-      padding: 20px;
-    }
-
-    .panel h2,
-    .panel h3 {
-      margin: 0 0 12px;
-      letter-spacing: -0.04em;
-      line-height: 1.25;
-    }
-
-    .index-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .index-chip {
-      border: 1px solid var(--line);
-      background: #fff;
-      border-radius: 999px;
-      padding: 7px 10px;
-      cursor: pointer;
-      color: var(--muted);
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    .index-chip:hover {
-      border-color: var(--primary);
-      color: var(--primary-dark);
-      background: var(--primary-soft);
-    }
-
-    .detail-card {
-      margin-top: 22px;
-      padding: 26px;
-      display: none;
-    }
-
-    .detail-card.open {
-      display: block;
-    }
-
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: start;
-    }
-
-    .detail-card h2 {
-      margin: 0;
-      font-size: 30px;
-      letter-spacing: -0.05em;
-      line-height: 1.2;
-    }
-
-    .section {
+    .result-section {
+      margin-top: 20px;
+      padding-top: 18px;
       border-top: 1px solid var(--line);
-      margin-top: 22px;
-      padding-top: 20px;
     }
 
-    .section h3 {
+    .result-section h3 {
       margin: 0 0 10px;
       font-size: 18px;
       letter-spacing: -0.03em;
     }
 
-    .outline {
+    .outline, .illustrations {
       display: grid;
       gap: 10px;
-      padding: 0;
       margin: 0;
+      padding: 0;
       list-style: none;
     }
 
-    .outline li,
-    .illustration {
-      background: var(--surface-soft);
-      border-radius: 16px;
-      padding: 14px;
+    .outline li, .illustration-card {
       border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--soft2);
+      padding: 14px;
     }
 
-    .outline strong,
-    .illustration strong {
-      display: block;
-      margin-bottom: 4px;
-    }
+    .outline strong, .illustration-card strong { display: block; margin-bottom: 4px; }
+    .summary { color: var(--muted); margin: 8px 0 0; }
 
-    .file-links {
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+
+    .actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 9px;
+      margin-top: 18px;
     }
 
-    .file-links a {
-      border-radius: 12px;
-      background: var(--surface-soft);
-      padding: 9px 11px;
-      color: var(--primary-dark);
-      font-weight: 800;
-      font-size: 13px;
-    }
-
-    .empty {
-      padding: 34px;
-      text-align: center;
-      border: 1px dashed var(--line);
-      border-radius: var(--radius);
-      color: var(--muted);
-      background: rgba(255,255,255,0.65);
-    }
-
-    .notice {
-      padding: 14px 16px;
-      border: 1px solid #fed7aa;
-      background: #fff7ed;
-      color: var(--warning);
-      border-radius: 16px;
+    .raw-box {
+      display: none;
       margin-top: 16px;
-      font-size: 14px;
     }
+
+    .raw-box.open { display: block; }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 16px;
+      border-radius: 16px;
+      overflow: auto;
+      max-height: 460px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .archive-section {
+      margin-top: 22px;
+      padding: 22px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr 0.8fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .archive-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .archive-item {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 16px;
+      cursor: pointer;
+    }
+
+    .archive-item:hover { border-color: rgba(59, 91, 219, 0.45); }
+    .archive-item h3 { margin: 0; letter-spacing: -0.03em; }
 
     footer {
+      padding: 26px 0 44px;
       border-top: 1px solid var(--line);
-      padding: 26px 0 40px;
       color: var(--muted);
       font-size: 14px;
     }
 
-    @media (max-width: 900px) {
-      .hero,
-      .layout,
-      .toolbar {
-        grid-template-columns: 1fr;
-      }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: min(420px, calc(100% - 36px));
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #111827;
+      color: #fff;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 10;
+    }
 
-      aside {
-        position: static;
-      }
+    .toast.open { display: block; }
 
-      .detail-header {
-        flex-direction: column;
-      }
+    @media (max-width: 960px) {
+      .hero, .status-wrap, .advanced, .toolbar, .options-grid { grid-template-columns: 1fr; }
+      .url-form { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <header class="container">
     <section class="hero">
-      <div class="hero-card">
-        <div class="hero-content">
-          <div class="eyebrow">Sermon Archive · GitHub Pages</div>
-          <h1>설교문, 예화, 주제를 한곳에 정리하는 아카이브</h1>
-          <p>
-            유튜브 설교 스크립트를 교정본, 요약, 대지, 예화, 본문, 주제 색인으로 정리해
-            나중에 설교 준비와 연구에 다시 꺼내 쓸 수 있도록 만든 정적 웹페이지입니다.
+      <div class="card hero-main">
+        <div class="hero-inner">
+          <div class="eyebrow">YouTube URL → Sermon Archive</div>
+          <h1>유튜브 설교 주소를 넣으면 아카이브 자료를 생성합니다</h1>
+          <p class="lead">
+            설교 영상 주소를 입력하면 설교자, 제목, 날짜, 본문, 오타 수정본, 요약, 대지, 예화, 주제 색인을 생성하는 화면입니다.
+            정적 GitHub Pages에서는 API 비밀키를 보관할 수 없으므로, 실제 생성은 별도 백엔드 API와 연결해야 합니다.
           </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="#archive">아카이브 보기</a>
-            <button class="btn btn-ghost" type="button" id="resetBtn">필터 초기화</button>
-          </div>
           <div class="notice">
-            실제 데이터를 연결하려면 저장소에 <strong>data/sermons.json</strong> 파일을 추가하세요.
-            데이터가 없을 때는 예시 설교 카드가 표시됩니다.
+            이 파일은 화면과 연결 로직을 모두 포함합니다. 실제 작동을 위해서는 아래 <strong>백엔드 API 주소</strong>에
+            설교 처리 서버 주소를 넣어야 합니다. API가 없으면 데모 결과가 표시됩니다.
           </div>
         </div>
       </div>
 
-      <div class="stat-panel hero-card">
-        <div class="stat">
-          <strong id="sermonCount">0</strong>
-          <span>등록된 설교</span>
+      <div class="card hero-side">
+        <div class="mini-stat">
+          <strong id="archiveCount">0</strong>
+          <span>브라우저에 임시 저장된 설교</span>
         </div>
-        <div class="stat">
-          <strong id="topicCount">0</strong>
-          <span>설교 주제 색인</span>
+        <div class="mini-stat">
+          <strong>7단계</strong>
+          <span>자막·전사·교정·분석·예화·색인·저장</span>
         </div>
-        <div class="stat">
-          <strong id="illustrationCount">0</strong>
-          <span>추출된 예화</span>
+        <div class="mini-stat">
+          <strong>JSON</strong>
+          <span>GitHub 저장용 데이터 다운로드 가능</span>
         </div>
       </div>
     </section>
   </header>
 
-  <main class="container" id="archive">
-    <section class="panel toolbar" aria-label="검색과 필터">
-      <input id="searchInput" type="search" placeholder="제목, 설교자, 본문, 주제, 예화를 검색하세요" />
-      <select id="speakerFilter">
-        <option value="">설교자 전체</option>
-      </select>
-      <select id="topicFilter">
-        <option value="">주제 전체</option>
-      </select>
-      <select id="bibleFilter">
-        <option value="">본문 전체</option>
-      </select>
-    </section>
+  <main class="container">
+    <section class="card input-section" aria-label="유튜브 설교 주소 입력">
+      <h2 class="section-title">1. 설교 영상 주소 입력</h2>
+      <p class="summary">
+        유튜브 주소를 넣고 생성 버튼을 누르세요. 백엔드 API가 연결되어 있으면 실제 분석 결과를 받고,
+        연결되어 있지 않으면 화면 테스트용 데모 결과가 생성됩니다.
+      </p>
 
-    <nav class="tabs" aria-label="보기 방식">
-      <button class="tab active" data-view="sermons" type="button">설교별 보기</button>
-      <button class="tab" data-view="topics" type="button">주제 색인</button>
-      <button class="tab" data-view="illustrations" type="button">예화 색인</button>
-    </nav>
+      <form id="sermonForm" class="url-form">
+        <input id="youtubeUrl" type="url" placeholder="예: https://www.youtube.com/watch?v=VIDEO_ID" required />
+        <button class="btn btn-primary" type="submit">설교 아카이브 생성</button>
+      </form>
 
-    <section class="layout">
-      <div>
-        <div id="list" class="sermon-list"></div>
-
-        <article id="detail" class="detail-card" aria-live="polite"></article>
+      <div class="advanced">
+        <label>
+          <span class="help">백엔드 API 주소</span>
+          <input id="apiEndpoint" type="url" placeholder="예: https://your-domain.com/api/archive-sermon" />
+        </label>
+        <label>
+          <span class="help">저장소용 슬러그, 선택 사항</span>
+          <input id="customSlug" type="text" placeholder="예: 2026-05-17-lee-sermon" />
+        </label>
       </div>
 
-      <aside>
-        <section class="panel">
-          <h2>빠른 주제 색인</h2>
-          <div id="topicChips" class="index-list"></div>
-        </section>
+      <div class="options-grid">
+        <label class="option"><input type="checkbox" id="doCorrection" checked /> 오타 수정본 생성</label>
+        <label class="option"><input type="checkbox" id="doAnalysis" checked /> 요약·대지 분석</label>
+        <label class="option"><input type="checkbox" id="doIllustrations" checked /> 예화 추출</label>
+        <label class="option"><input type="checkbox" id="doIndexing" checked /> 주제 색인 생성</label>
+      </div>
 
-        <section class="panel">
-          <h3>본문별 색인</h3>
-          <div id="bibleChips" class="index-list"></div>
-        </section>
+      <p class="help">
+        권장 백엔드 응답 형식은 이 파일 아래쪽 JavaScript의 <code>expectedResponseShape</code> 주석을 참고하세요.
+      </p>
+    </section>
 
-        <section class="panel">
-          <h3>예화 주제</h3>
-          <div id="illustrationTopicChips" class="index-list"></div>
-        </section>
+    <section class="status-wrap">
+      <aside class="card panel">
+        <h2 class="section-title">2. 처리 진행 상황</h2>
+        <div class="steps" id="steps">
+          <div class="step" data-step="validate"><div class="step-number">1</div><div><strong>주소 확인</strong><span>유튜브 주소 형식을 확인합니다.</span></div></div>
+          <div class="step" data-step="metadata"><div class="step-number">2</div><div><strong>영상 정보 수집</strong><span>제목, 채널, 날짜, 설명란을 가져옵니다.</span></div></div>
+          <div class="step" data-step="transcript"><div class="step-number">3</div><div><strong>자막·전사 확보</strong><span>자막이 있으면 사용하고, 없으면 전사를 요청합니다.</span></div></div>
+          <div class="step" data-step="correction"><div class="step-number">4</div><div><strong>오타 수정</strong><span>원문 흐름을 보존하며 오타와 띄어쓰기를 정리합니다.</span></div></div>
+          <div class="step" data-step="analysis"><div class="step-number">5</div><div><strong>설교 분석</strong><span>요점, 대지, 핵심 메시지를 정리합니다.</span></div></div>
+          <div class="step" data-step="illustrations"><div class="step-number">6</div><div><strong>예화 추출</strong><span>예화와 연결 가능한 주제를 분리합니다.</span></div></div>
+          <div class="step" data-step="save"><div class="step-number">7</div><div><strong>아카이브 저장</strong><span>브라우저 저장소와 JSON 파일로 보관합니다.</span></div></div>
+        </div>
       </aside>
+
+      <section class="card panel" id="resultPanel">
+        <div class="result-empty" id="emptyResult">
+          아직 생성된 결과가 없습니다.<br />위에 유튜브 주소를 입력하고 생성 버튼을 눌러주세요.
+        </div>
+        <article id="result" style="display:none;"></article>
+      </section>
+    </section>
+
+    <section class="card archive-section">
+      <h2 class="section-title">3. 생성된 설교 아카이브</h2>
+      <p class="summary">이 목록은 현재 브라우저의 LocalStorage에 저장됩니다. GitHub 저장소에 반영하려면 JSON을 다운로드해 <code>data/sermons.json</code>에 합치면 됩니다.</p>
+      <div class="toolbar">
+        <input id="searchArchive" type="search" placeholder="제목, 설교자, 본문, 주제 검색" />
+        <select id="topicFilter"><option value="">주제 전체</option></select>
+        <button class="btn btn-ghost" type="button" id="downloadAllBtn">전체 JSON 다운로드</button>
+      </div>
+      <div class="archive-list" id="archiveList"></div>
     </section>
   </main>
 
   <footer class="container">
     <p>
-      이 페이지는 GitHub Pages에서 바로 사용할 수 있는 단일 HTML 파일입니다.
-      설교 전문 공개 여부와 영상·자막 사용 권한은 반드시 확인한 뒤 운영하세요.
+      GitHub Pages는 정적 사이트이므로 OpenAI API 키, YouTube 처리 권한, 음성 전사 작업은 프론트엔드에 넣으면 안 됩니다.
+      실제 운영에서는 Vercel, Render, Cloudflare Workers, Railway, 개인 서버 등 별도 백엔드에서 처리한 뒤 이 화면으로 결과를 반환하게 하세요.
     </p>
   </footer>
 
-  <script>
-    const sampleSermons = [
-      {
-        id: "sample-001",
-        title: "하나님이 세우시는 인생 멘토",
-        speaker: "이찬수 목사",
-        date: "2026-05-17",
-        bibleText: "마태복음 6:31-33",
-        church: "예시 교회",
-        videoUrl: "https://www.youtube.com/",
-        summary: "이 설교는 인생의 방향을 잃은 시대 속에서 하나님의 말씀을 기준 삼는 삶의 중요성을 강조합니다.",
-        mainMessage: "말씀을 기준 삼는 인생이 하나님 앞에서 바른 방향을 찾는다.",
-        outline: [
-          {
-            title: "인생에는 바른 기준이 필요하다",
-            summary: "사람은 누구나 방향을 찾지만, 세상의 기준만으로는 인생을 온전히 세울 수 없습니다."
-          },
-          {
-            title: "말씀은 삶의 우선순위를 바로잡는다",
-            summary: "먼저 그의 나라와 의를 구하라는 말씀은 삶의 중심을 하나님께 두라는 초청입니다."
-          },
-          {
-            title: "하나님이 세우시는 사람이 되라",
-            summary: "하나님께 붙들린 사람은 상황보다 말씀에 반응하며 살아갑니다."
-          }
-        ],
-        topics: ["말씀", "인생의 방향", "멘토", "순종", "신앙 성장"],
-        applications: [
-          "중요한 선택 앞에서 먼저 하나님께 묻는 습관을 가져야 합니다.",
-          "사람의 평가보다 말씀의 기준을 더 크게 붙들어야 합니다."
-        ],
-        illustrations: [
-          {
-            title: "인생의 롤모델이 없는 청년들",
-            summary: "많은 청년들이 인생의 롤모델이 없다고 답한 설문을 통해 바른 기준의 필요성을 설명합니다.",
-            topics: ["청년", "멘토", "인생의 방향", "신앙교육"]
-          }
-        ],
-        files: {
-          rawTranscript: "data/sermons/sample-001/raw_transcript.md",
-          correctedTranscript: "data/sermons/sample-001/corrected_transcript.md",
-          analysis: "data/sermons/sample-001/analysis.json",
-          illustrations: "data/sermons/sample-001/illustrations.json"
-        }
-      },
-      {
-        id: "sample-002",
-        title: "상처를 별이 되게 하시는 하나님",
-        speaker: "예시 설교자",
-        date: "2026-04-28",
-        bibleText: "창세기 41:37-57",
-        church: "예시 교회",
-        videoUrl: "",
-        summary: "요셉의 인생을 통해 하나님께서 상처와 고난을 버리지 않으시고 구원의 통로로 사용하심을 보여줍니다.",
-        mainMessage: "하나님은 우리의 상처까지도 하나님의 섭리 안에서 새롭게 빚으신다.",
-        outline: [
-          {
-            title: "감옥의 시간이 끝이 아니었다",
-            summary: "요셉의 긴 기다림은 버려진 시간이 아니라 하나님이 준비하신 시간이었습니다."
-          },
-          {
-            title: "상처가 사명의 통로가 되었다",
-            summary: "요셉이 겪은 고난은 애굽과 가족을 살리는 하나님의 도구가 되었습니다."
-          }
-        ],
-        topics: ["고난", "상처", "회복", "하나님의 섭리", "요셉"],
-        applications: [
-          "현재의 아픔만으로 하나님의 일하심을 단정하지 않아야 합니다.",
-          "하나님께서 상처를 사명으로 바꾸실 수 있음을 믿어야 합니다."
-        ],
-        illustrations: [
-          {
-            title: "킨츠기, 깨진 그릇을 금으로 잇다",
-            summary: "깨진 도자기를 금으로 이어 더 아름답게 만드는 기법을 통해 상처를 회복하시는 하나님의 은혜를 설명합니다.",
-            topics: ["상처", "회복", "은혜", "고난"]
-          }
-        ],
-        files: {
-          correctedTranscript: "data/sermons/sample-002/corrected_transcript.md",
-          analysis: "data/sermons/sample-002/analysis.json"
-        }
-      }
-    ];
+  <div class="toast" id="toast"></div>
 
-    let sermons = [];
-    let filtered = [];
-    let currentView = "sermons";
+  <script>
+    /**
+     * expectedResponseShape
+     * 백엔드 API는 POST 요청을 받고 아래와 같은 JSON을 반환하면 됩니다.
+     *
+     * {
+     *   "id": "2026-05-17-sermon-title",
+     *   "videoUrl": "https://www.youtube.com/watch?v=...",
+     *   "title": "설교 제목",
+     *   "speaker": "설교자",
+     *   "date": "2026-05-17",
+     *   "bibleText": "마태복음 5:1-3",
+     *   "church": "교회명 또는 채널명",
+     *   "summary": "설교 요약",
+     *   "mainMessage": "핵심 메시지",
+     *   "outline": [{ "title": "대지 제목", "summary": "대지 설명" }],
+     *   "topics": ["팔복", "천국", "겸손"],
+     *   "applications": ["적용점 1", "적용점 2"],
+     *   "illustrations": [{ "title": "예화 제목", "summary": "예화 내용", "topics": ["복", "욕망"] }],
+     *   "rawTranscript": "원문 자막 또는 전사문",
+     *   "correctedTranscript": "오타 수정본 전문"
+     * }
+     */
+
+    const STORAGE_KEY = "sermonArchiveItems.v1";
 
     const $ = (selector) => document.querySelector(selector);
-    const listEl = $("#list");
-    const detailEl = $("#detail");
-    const searchInput = $("#searchInput");
-    const speakerFilter = $("#speakerFilter");
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+    const form = $("#sermonForm");
+    const youtubeUrlInput = $("#youtubeUrl");
+    const apiEndpointInput = $("#apiEndpoint");
+    const customSlugInput = $("#customSlug");
+    const emptyResult = $("#emptyResult");
+    const result = $("#result");
+    const archiveList = $("#archiveList");
+    const archiveCount = $("#archiveCount");
+    const searchArchive = $("#searchArchive");
     const topicFilter = $("#topicFilter");
-    const bibleFilter = $("#bibleFilter");
+    const toast = $("#toast");
+
+    const stepOrder = ["validate", "metadata", "transcript", "correction", "analysis", "illustrations", "save"];
 
     function normalize(value) {
       return String(value || "").trim().toLowerCase();
-    }
-
-    function unique(values) {
-      return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
-    }
-
-    function allTopics(data) {
-      return unique(data.flatMap(item => item.topics || []));
-    }
-
-    function allIllustrationTopics(data) {
-      return unique(data.flatMap(item => (item.illustrations || []).flatMap(ill => ill.topics || [])));
-    }
-
-    function formatDate(date) {
-      if (!date) return "날짜 미상";
-      return date;
     }
 
     function escapeHtml(value) {
@@ -684,334 +619,364 @@
         .replaceAll("'", "&#039;");
     }
 
-    function includesAnyText(sermon, keyword) {
-      const text = [
-        sermon.title,
-        sermon.speaker,
-        sermon.date,
-        sermon.bibleText,
-        sermon.church,
-        sermon.summary,
-        sermon.mainMessage,
-        ...(sermon.topics || []),
-        ...(sermon.applications || []),
-        ...(sermon.outline || []).flatMap(item => [item.title, item.summary]),
-        ...(sermon.illustrations || []).flatMap(item => [item.title, item.summary, ...(item.topics || [])])
-      ].join(" ");
-      return normalize(text).includes(keyword);
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    function applyFilters() {
-      const keyword = normalize(searchInput.value);
-      const speaker = speakerFilter.value;
-      const topic = topicFilter.value;
-      const bible = bibleFilter.value;
-
-      filtered = sermons.filter(sermon => {
-        const keywordOk = !keyword || includesAnyText(sermon, keyword);
-        const speakerOk = !speaker || sermon.speaker === speaker;
-        const topicOk = !topic || (sermon.topics || []).includes(topic) || (sermon.illustrations || []).some(ill => (ill.topics || []).includes(topic));
-        const bibleOk = !bible || sermon.bibleText === bible;
-        return keywordOk && speakerOk && topicOk && bibleOk;
-      });
-
-      render();
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("open");
+      setTimeout(() => toast.classList.remove("open"), 3600);
     }
 
-    function renderStats() {
-      $("#sermonCount").textContent = sermons.length;
-      $("#topicCount").textContent = allTopics(sermons).length;
-      $("#illustrationCount").textContent = sermons.reduce((sum, sermon) => sum + (sermon.illustrations || []).length, 0);
+    function readArchive() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      } catch {
+        return [];
+      }
     }
 
-    function renderFilters() {
-      const speakers = unique(sermons.map(item => item.speaker));
-      const topics = unique([...allTopics(sermons), ...allIllustrationTopics(sermons)]);
-      const bibleTexts = unique(sermons.map(item => item.bibleText));
-
-      speakerFilter.innerHTML = `<option value="">설교자 전체</option>` + speakers.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
-      topicFilter.innerHTML = `<option value="">주제 전체</option>` + topics.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
-      bibleFilter.innerHTML = `<option value="">본문 전체</option>` + bibleTexts.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+    function writeArchive(items) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items, null, 2));
+      renderArchive();
     }
 
-    function renderChips() {
-      $("#topicChips").innerHTML = allTopics(sermons)
-        .map(topic => `<button class="index-chip" type="button" data-topic="${escapeHtml(topic)}">${escapeHtml(topic)}</button>`)
-        .join("");
+    function upsertArchive(item) {
+      const items = readArchive();
+      const index = items.findIndex(existing => existing.id === item.id);
+      if (index >= 0) items[index] = item;
+      else items.unshift(item);
+      writeArchive(items);
+    }
 
-      $("#bibleChips").innerHTML = unique(sermons.map(item => item.bibleText))
-        .map(text => `<button class="index-chip" type="button" data-bible="${escapeHtml(text)}">${escapeHtml(text)}</button>`)
-        .join("");
+    function isLikelyYouTubeUrl(url) {
+      try {
+        const parsed = new URL(url);
+        return ["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"].includes(parsed.hostname);
+      } catch {
+        return false;
+      }
+    }
 
-      $("#illustrationTopicChips").innerHTML = allIllustrationTopics(sermons)
-        .map(topic => `<button class="index-chip" type="button" data-topic="${escapeHtml(topic)}">${escapeHtml(topic)}</button>`)
-        .join("");
+    function extractVideoId(url) {
+      try {
+        const parsed = new URL(url);
+        if (parsed.hostname === "youtu.be") return parsed.pathname.replace("/", "").slice(0, 20);
+        return parsed.searchParams.get("v") || parsed.pathname.split("/").filter(Boolean).pop() || "unknown-video";
+      } catch {
+        return "unknown-video";
+      }
+    }
 
-      document.querySelectorAll("[data-topic]").forEach(button => {
-        button.addEventListener("click", () => {
-          topicFilter.value = button.dataset.topic;
-          currentView = "sermons";
-          updateTabs();
-          applyFilters();
-        });
-      });
+    function slugify(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9가-힣]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80) || "sermon";
+    }
 
-      document.querySelectorAll("[data-bible]").forEach(button => {
-        button.addEventListener("click", () => {
-          bibleFilter.value = button.dataset.bible;
-          currentView = "sermons";
-          updateTabs();
-          applyFilters();
-        });
+    function resetSteps() {
+      $$(".step").forEach(step => {
+        step.classList.remove("active", "done", "error");
       });
     }
 
-    function sermonCard(sermon) {
-      const topicTags = (sermon.topics || []).slice(0, 7)
-        .map(topic => `<span class="pill primary">${escapeHtml(topic)}</span>`)
-        .join("");
-
-      return `
-        <article class="sermon-card" role="button" tabindex="0" data-id="${escapeHtml(sermon.id)}">
-          <div class="sermon-meta">
-            <span>${escapeHtml(formatDate(sermon.date))}</span>
-            <span>·</span>
-            <span>${escapeHtml(sermon.speaker || "설교자 미상")}</span>
-            <span>·</span>
-            <span>${escapeHtml(sermon.bibleText || "본문 미상")}</span>
-          </div>
-          <h2 class="sermon-title">${escapeHtml(sermon.title || "제목 미상")}</h2>
-          <p class="summary">${escapeHtml(sermon.summary || sermon.mainMessage || "요약 정보가 없습니다.")}</p>
-          <div class="tags">${topicTags}</div>
-        </article>
-      `;
+    function setStep(stepName, state) {
+      const el = document.querySelector(`.step[data-step="${stepName}"]`);
+      if (!el) return;
+      el.classList.remove("active", "done", "error");
+      if (state) el.classList.add(state);
     }
 
-    function renderSermons() {
-      if (!filtered.length) {
-        listEl.innerHTML = `<div class="empty">검색 조건에 맞는 설교가 없습니다.</div>`;
-        detailEl.classList.remove("open");
-        return;
+    function markUntil(stepName, state) {
+      const targetIndex = stepOrder.indexOf(stepName);
+      stepOrder.forEach((name, index) => {
+        if (index < targetIndex) setStep(name, "done");
+        if (index === targetIndex) setStep(name, state);
+      });
+    }
+
+    async function callBackend(payload) {
+      const endpoint = apiEndpointInput.value.trim();
+      if (!endpoint) return null;
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`백엔드 API 오류: ${response.status}`);
       }
 
-      listEl.innerHTML = filtered.map(sermonCard).join("");
-
-      document.querySelectorAll(".sermon-card").forEach(card => {
-        const open = () => showDetail(card.dataset.id);
-        card.addEventListener("click", open);
-        card.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") open();
-        });
-      });
+      return response.json();
     }
 
-    function renderTopics() {
-      const topicMap = new Map();
+    async function makeDemoResult(payload) {
+      const videoId = extractVideoId(payload.videoUrl);
+      const today = new Date().toISOString().slice(0, 10);
+      const id = payload.customSlug || `${today}-${videoId}`;
 
-      sermons.forEach(sermon => {
-        (sermon.topics || []).forEach(topic => {
-          if (!topicMap.has(topic)) topicMap.set(topic, []);
-          topicMap.get(topic).push(sermon);
-        });
-      });
+      await sleep(450); markUntil("metadata", "active");
+      await sleep(450); markUntil("transcript", "active");
+      await sleep(450); markUntil("correction", "active");
+      await sleep(450); markUntil("analysis", "active");
+      await sleep(450); markUntil("illustrations", "active");
 
-      const html = [...topicMap.entries()]
-        .sort((a, b) => a[0].localeCompare(b[0], "ko"))
-        .map(([topic, items]) => `
-          <article class="sermon-card">
-            <h2 class="sermon-title"># ${escapeHtml(topic)}</h2>
-            <p class="summary">${items.length}개의 설교가 연결되어 있습니다.</p>
-            <div class="tags">
-              ${items.map(item => `<button class="index-chip" type="button" data-id="${escapeHtml(item.id)}">${escapeHtml(item.title)}</button>`).join("")}
-            </div>
-          </article>
-        `).join("");
-
-      listEl.innerHTML = html || `<div class="empty">등록된 주제 색인이 없습니다.</div>`;
-
-      document.querySelectorAll("[data-id]").forEach(button => {
-        button.addEventListener("click", () => showDetail(button.dataset.id));
-      });
+      return {
+        id,
+        videoUrl: payload.videoUrl,
+        title: "데모 설교 제목: 나도 복을 받을 수 있을까?",
+        speaker: "설교자 미상",
+        date: today,
+        bibleText: "마태복음 5:1-3",
+        church: "YouTube 설교 채널",
+        summary: "이 데모 결과는 백엔드 API가 연결되지 않았을 때 화면 동작을 보여주기 위해 생성된 예시입니다. 실제 운영에서는 백엔드가 자막 또는 전사문을 확보하고, 오타 수정본과 분석 자료를 반환해야 합니다.",
+        mainMessage: "참된 복은 세상이 말하는 소유와 성공이 아니라, 하나님 앞에서 자신의 가난함을 아는 마음에서 시작됩니다.",
+        outline: [
+          { title: "사람들은 복을 갈망한다", summary: "세상은 복을 물질, 성공, 운으로 이해하지만 성경은 복을 하나님과의 관계에서 설명합니다." },
+          { title: "심령이 가난한 자가 복이 있다", summary: "심령의 가난은 하나님 없이는 살 수 없다는 영적 자각입니다." },
+          { title: "천국은 하나님께 의존하는 자의 것이다", summary: "자기 힘을 의지하는 자가 아니라 은혜를 구하는 자에게 천국의 복이 주어집니다." }
+        ],
+        topics: ["팔복", "복", "천국", "겸손", "은혜", "마태복음"],
+        applications: [
+          "내가 붙들고 있는 복의 기준이 세상적인지 말씀적인지 점검해야 합니다.",
+          "하나님 앞에서 나의 영적 가난함을 인정하며 은혜를 구해야 합니다."
+        ],
+        illustrations: [
+          {
+            title: "로또 명당 앞에 모인 사람들",
+            summary: "사람들이 복을 얻기 위해 유명한 로또 판매점에 몰려드는 장면을 통해, 인간 안에 있는 복에 대한 갈망을 보여줍니다.",
+            topics: ["복", "욕망", "세상 가치관", "팔복"]
+          }
+        ],
+        rawTranscript: "데모 원문입니다. 실제 백엔드가 연결되면 이곳에 유튜브 자막 또는 전사 원문이 들어갑니다.",
+        correctedTranscript: "데모 오타 수정본입니다. 실제 백엔드가 연결되면 이곳에 오타와 띄어쓰기만 수정한 설교문 전문이 들어갑니다."
+      };
     }
 
-    function renderIllustrations() {
-      const illustrations = filtered.flatMap(sermon => {
-        return (sermon.illustrations || []).map(ill => ({ ...ill, sermon }));
-      });
+    async function processSermon(event) {
+      event.preventDefault();
+      resetSteps();
+      result.style.display = "none";
+      emptyResult.style.display = "block";
 
-      if (!illustrations.length) {
-        listEl.innerHTML = `<div class="empty">검색 조건에 맞는 예화가 없습니다.</div>`;
-        detailEl.classList.remove("open");
-        return;
+      const videoUrl = youtubeUrlInput.value.trim();
+      const payload = {
+        videoUrl,
+        customSlug: customSlugInput.value.trim(),
+        options: {
+          correction: $("#doCorrection").checked,
+          analysis: $("#doAnalysis").checked,
+          illustrations: $("#doIllustrations").checked,
+          indexing: $("#doIndexing").checked
+        }
+      };
+
+      try {
+        markUntil("validate", "active");
+        await sleep(250);
+
+        if (!isLikelyYouTubeUrl(videoUrl)) {
+          setStep("validate", "error");
+          showToast("유튜브 주소 형식을 확인해주세요.");
+          return;
+        }
+
+        setStep("validate", "done");
+        markUntil("metadata", "active");
+
+        let data = await callBackend(payload);
+        if (!data) {
+          showToast("백엔드 API 주소가 없어 데모 결과를 생성합니다.");
+          data = await makeDemoResult(payload);
+        }
+
+        markUntil("save", "active");
+        await sleep(250);
+
+        data.id = data.id || payload.customSlug || slugify(`${data.date || "date"}-${data.title || extractVideoId(videoUrl)}`);
+        data.videoUrl = data.videoUrl || videoUrl;
+        data.createdAt = new Date().toISOString();
+
+        upsertArchive(data);
+        setStep("save", "done");
+        showResult(data);
+        showToast("설교 아카이브 자료가 생성되었습니다.");
+      } catch (error) {
+        console.error(error);
+        const active = document.querySelector(".step.active");
+        if (active) active.classList.add("error");
+        showToast(error.message || "처리 중 오류가 발생했습니다.");
       }
-
-      listEl.innerHTML = illustrations.map(item => `
-        <article class="sermon-card">
-          <div class="sermon-meta">
-            <span>예화</span>
-            <span>·</span>
-            <span>${escapeHtml(item.sermon.title)}</span>
-            <span>·</span>
-            <span>${escapeHtml(item.sermon.speaker || "설교자 미상")}</span>
-          </div>
-          <h2 class="sermon-title">${escapeHtml(item.title || "예화 제목 미상")}</h2>
-          <p class="summary">${escapeHtml(item.summary || "예화 요약 정보가 없습니다.")}</p>
-          <div class="tags">
-            ${(item.topics || []).map(topic => `<span class="pill accent">${escapeHtml(topic)}</span>`).join("")}
-          </div>
-          <div class="hero-actions">
-            <button class="btn btn-ghost" type="button" data-id="${escapeHtml(item.sermon.id)}">설교 보기</button>
-          </div>
-        </article>
-      `).join("");
-
-      document.querySelectorAll("[data-id]").forEach(button => {
-        button.addEventListener("click", () => showDetail(button.dataset.id));
-      });
     }
 
-    function render() {
-      if (currentView === "topics") renderTopics();
-      else if (currentView === "illustrations") renderIllustrations();
-      else renderSermons();
-    }
+    function showResult(item) {
+      emptyResult.style.display = "none";
+      result.style.display = "block";
 
-    function updateTabs() {
-      document.querySelectorAll(".tab").forEach(tab => {
-        tab.classList.toggle("active", tab.dataset.view === currentView);
-      });
-    }
-
-    function showDetail(id) {
-      const sermon = sermons.find(item => item.id === id);
-      if (!sermon) return;
-
-      const outline = (sermon.outline || []).map((item, index) => `
+      const outlineHtml = (item.outline || []).map((line, index) => `
         <li>
-          <strong>${index + 1}. ${escapeHtml(item.title || "대지 제목 없음")}</strong>
-          <span>${escapeHtml(item.summary || "")}</span>
+          <strong>${index + 1}. ${escapeHtml(line.title || "대지 제목 미상")}</strong>
+          <span>${escapeHtml(line.summary || "")}</span>
         </li>
       `).join("");
 
-      const illustrations = (sermon.illustrations || []).map(item => `
-        <div class="illustration">
-          <strong>${escapeHtml(item.title || "예화 제목 미상")}</strong>
-          <p class="summary">${escapeHtml(item.summary || "")}</p>
-          <div class="tags">
-            ${(item.topics || []).map(topic => `<span class="pill accent">${escapeHtml(topic)}</span>`).join("")}
-          </div>
+      const illustrationHtml = (item.illustrations || []).map(ill => `
+        <div class="illustration-card">
+          <strong>${escapeHtml(ill.title || "예화 제목 미상")}</strong>
+          <p class="summary">${escapeHtml(ill.summary || "")}</p>
+          <div class="tags">${(ill.topics || []).map(topic => `<span class="pill accent">${escapeHtml(topic)}</span>`).join("")}</div>
         </div>
       `).join("");
 
-      const applications = (sermon.applications || []).map(item => `<li>${escapeHtml(item)}</li>`).join("");
-
-      const files = sermon.files || {};
-      const fileLinks = [
-        files.rawTranscript ? `<a href="${escapeHtml(files.rawTranscript)}">원문 스크립트</a>` : "",
-        files.correctedTranscript ? `<a href="${escapeHtml(files.correctedTranscript)}">오타 수정본</a>` : "",
-        files.analysis ? `<a href="${escapeHtml(files.analysis)}">분석 JSON</a>` : "",
-        files.illustrations ? `<a href="${escapeHtml(files.illustrations)}">예화 JSON</a>` : "",
-        sermon.videoUrl ? `<a href="${escapeHtml(sermon.videoUrl)}" target="_blank" rel="noopener">영상 보기</a>` : ""
-      ].filter(Boolean).join("");
-
-      detailEl.innerHTML = `
-        <div class="detail-header">
+      result.innerHTML = `
+        <div class="result-header">
           <div>
-            <div class="sermon-meta">
-              <span>${escapeHtml(formatDate(sermon.date))}</span>
+            <h2 class="sermon-title">${escapeHtml(item.title || "제목 미상")}</h2>
+            <div class="meta">
+              <span>${escapeHtml(item.speaker || "설교자 미상")}</span>
               <span>·</span>
-              <span>${escapeHtml(sermon.speaker || "설교자 미상")}</span>
+              <span>${escapeHtml(item.date || "날짜 미상")}</span>
               <span>·</span>
-              <span>${escapeHtml(sermon.bibleText || "본문 미상")}</span>
+              <span>${escapeHtml(item.bibleText || "본문 미상")}</span>
             </div>
-            <h2>${escapeHtml(sermon.title || "제목 미상")}</h2>
           </div>
-          <button class="btn btn-ghost" type="button" id="closeDetail">닫기</button>
+          <a class="btn btn-ghost" href="${escapeHtml(item.videoUrl || "#")}" target="_blank" rel="noopener">영상 열기</a>
         </div>
 
-        <div class="section">
+        <div class="result-section">
           <h3>핵심 메시지</h3>
-          <p>${escapeHtml(sermon.mainMessage || sermon.summary || "핵심 메시지가 등록되지 않았습니다.")}</p>
+          <p>${escapeHtml(item.mainMessage || item.summary || "핵심 메시지가 없습니다.")}</p>
         </div>
 
-        <div class="section">
-          <h3>설교 대지</h3>
-          ${outline ? `<ol class="outline">${outline}</ol>` : `<p class="summary">대지 정보가 없습니다.</p>`}
+        <div class="result-section">
+          <h3>설교 요약</h3>
+          <p>${escapeHtml(item.summary || "요약이 없습니다.")}</p>
         </div>
 
-        <div class="section">
-          <h3>적용점</h3>
-          ${applications ? `<ul>${applications}</ul>` : `<p class="summary">적용점 정보가 없습니다.</p>`}
+        <div class="result-section">
+          <h3>대지</h3>
+          ${outlineHtml ? `<ol class="outline">${outlineHtml}</ol>` : `<p class="summary">대지 정보가 없습니다.</p>`}
         </div>
 
-        <div class="section">
-          <h3>연결 주제</h3>
-          <div class="tags">
-            ${(sermon.topics || []).map(topic => `<span class="pill primary">${escapeHtml(topic)}</span>`).join("")}
-          </div>
+        <div class="result-section">
+          <h3>주제 색인</h3>
+          <div class="tags">${(item.topics || []).map(topic => `<span class="pill primary">${escapeHtml(topic)}</span>`).join("")}</div>
         </div>
 
-        <div class="section">
+        <div class="result-section">
           <h3>예화</h3>
-          <div class="sermon-list">${illustrations || `<p class="summary">추출된 예화가 없습니다.</p>`}</div>
+          <div class="illustrations">${illustrationHtml || `<p class="summary">추출된 예화가 없습니다.</p>`}</div>
         </div>
 
-        <div class="section">
-          <h3>자료 파일</h3>
-          <div class="file-links">${fileLinks || `<span class="summary">연결된 파일이 없습니다.</span>`}</div>
+        <div class="actions">
+          <button class="btn btn-ghost" type="button" id="toggleTranscriptBtn">오타 수정본 보기</button>
+          <button class="btn btn-ghost" type="button" id="copyJsonBtn">JSON 복사</button>
+          <button class="btn btn-primary" type="button" id="downloadJsonBtn">JSON 다운로드</button>
+        </div>
+
+        <div class="raw-box" id="transcriptBox">
+          <pre>${escapeHtml(item.correctedTranscript || item.rawTranscript || "전문 스크립트가 없습니다.")}</pre>
         </div>
       `;
 
-      detailEl.classList.add("open");
-      detailEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      $("#toggleTranscriptBtn").addEventListener("click", () => {
+        $("#transcriptBox").classList.toggle("open");
+      });
 
-      $("#closeDetail").addEventListener("click", () => {
-        detailEl.classList.remove("open");
+      $("#copyJsonBtn").addEventListener("click", async () => {
+        await navigator.clipboard.writeText(JSON.stringify(item, null, 2));
+        showToast("JSON을 클립보드에 복사했습니다.");
+      });
+
+      $("#downloadJsonBtn").addEventListener("click", () => {
+        downloadJson(`${item.id || "sermon"}.json`, item);
       });
     }
 
-    async function loadSermons() {
-      try {
-        const response = await fetch("data/sermons.json", { cache: "no-store" });
-        if (!response.ok) throw new Error("data/sermons.json not found");
-        const data = await response.json();
-        sermons = Array.isArray(data) ? data : data.sermons;
-        if (!Array.isArray(sermons) || !sermons.length) throw new Error("empty data");
-      } catch (error) {
-        sermons = sampleSermons;
+    function itemMatches(item, keyword, topic) {
+      const haystack = [
+        item.title, item.speaker, item.date, item.bibleText, item.summary, item.mainMessage,
+        ...(item.topics || []),
+        ...(item.illustrations || []).flatMap(ill => [ill.title, ill.summary, ...(ill.topics || [])])
+      ].join(" ");
+      const keywordOk = !keyword || normalize(haystack).includes(keyword);
+      const topicOk = !topic || (item.topics || []).includes(topic) || (item.illustrations || []).some(ill => (ill.topics || []).includes(topic));
+      return keywordOk && topicOk;
+    }
+
+    function renderArchive() {
+      const items = readArchive();
+      archiveCount.textContent = items.length;
+
+      const allTopics = [...new Set(items.flatMap(item => [
+        ...(item.topics || []),
+        ...(item.illustrations || []).flatMap(ill => ill.topics || [])
+      ]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
+
+      const selectedTopic = topicFilter.value;
+      topicFilter.innerHTML = `<option value="">주제 전체</option>` + allTopics.map(topic => `<option value="${escapeHtml(topic)}">${escapeHtml(topic)}</option>`).join("");
+      topicFilter.value = selectedTopic;
+
+      const keyword = normalize(searchArchive.value);
+      const topic = topicFilter.value;
+      const filtered = items.filter(item => itemMatches(item, keyword, topic));
+
+      if (!filtered.length) {
+        archiveList.innerHTML = `<div class="result-empty">저장된 설교가 없습니다.</div>`;
+        return;
       }
 
-      filtered = sermons;
-      renderStats();
-      renderFilters();
-      renderChips();
-      render();
+      archiveList.innerHTML = filtered.map(item => `
+        <article class="archive-item" data-id="${escapeHtml(item.id)}">
+          <h3>${escapeHtml(item.title || "제목 미상")}</h3>
+          <div class="meta">
+            <span>${escapeHtml(item.speaker || "설교자 미상")}</span>
+            <span>·</span>
+            <span>${escapeHtml(item.date || "날짜 미상")}</span>
+            <span>·</span>
+            <span>${escapeHtml(item.bibleText || "본문 미상")}</span>
+          </div>
+          <p class="summary">${escapeHtml(item.mainMessage || item.summary || "")}</p>
+          <div class="tags">${(item.topics || []).slice(0, 8).map(topic => `<span class="pill primary">${escapeHtml(topic)}</span>`).join("")}</div>
+        </article>
+      `).join("");
+
+      $$(".archive-item").forEach(card => {
+        card.addEventListener("click", () => {
+          const item = readArchive().find(entry => entry.id === card.dataset.id);
+          if (item) showResult(item);
+          window.scrollTo({ top: document.querySelector("#resultPanel").offsetTop - 20, behavior: "smooth" });
+        });
+      });
     }
 
-    searchInput.addEventListener("input", applyFilters);
-    speakerFilter.addEventListener("change", applyFilters);
-    topicFilter.addEventListener("change", applyFilters);
-    bibleFilter.addEventListener("change", applyFilters);
+    function downloadJson(filename, data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
 
-    document.querySelectorAll(".tab").forEach(tab => {
-      tab.addEventListener("click", () => {
-        currentView = tab.dataset.view;
-        updateTabs();
-        render();
-      });
+    form.addEventListener("submit", processSermon);
+    searchArchive.addEventListener("input", renderArchive);
+    topicFilter.addEventListener("change", renderArchive);
+
+    $("#downloadAllBtn").addEventListener("click", () => {
+      const items = readArchive();
+      downloadJson("sermons.json", { sermons: items });
     });
 
-    $("#resetBtn").addEventListener("click", () => {
-      searchInput.value = "";
-      speakerFilter.value = "";
-      topicFilter.value = "";
-      bibleFilter.value = "";
-      currentView = "sermons";
-      updateTabs();
-      applyFilters();
-    });
-
-    loadSermons();
+    renderArchive();
   </script>
 </body>
 </html>

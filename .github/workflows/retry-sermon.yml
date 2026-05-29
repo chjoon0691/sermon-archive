@@ -1,50 +1,17 @@
 name: Retry pending sermon requests
 
 on:
-  schedule:
-    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
   issues: write
 
-concurrency:
-  group: sermon-archive-retry-queue
-  cancel-in-progress: false
-
 jobs:
-  retry:
+  notice:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install dependencies
+      - name: Notice
         run: |
-          python -m pip install --upgrade pip
-          pip install google-genai python-slugify PyGithub
-      - name: Retry pending sermon requests
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GEMINI_MODELS: gemini-2.5-flash-lite,gemini-2.5-flash
-          RUN_MODE: retry_pending
-          RETRY_LIMIT_PER_RUN: "2"
-        run: python scripts/process_sermon_issue.py
-      - name: Commit archive files
-        run: |
-          git config user.name "sermon-archive-bot"
-          git config user.email "actions@github.com"
-          git add data sermons
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Retry pending sermon archive requests"
-            git push
-          fi
+          echo "Success-mode version does not use automatic YouTube transcription retry."
+          echo "Create or edit an issue with a sermon transcript, then run Process sermon archive request."
